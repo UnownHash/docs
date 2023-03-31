@@ -1,0 +1,22 @@
+{
+  "index": {
+    "title": "Unownhash",
+    "display": "hidden",
+    "type": "page"
+  },
+  "about": {
+    "title": "About",
+    "display": "hidden",
+    "type": "page"
+  },
+  "docs": {
+    "title": "Documentation",
+    "type": "page"
+  },
+  "contact": {
+    "title": "Contact ↗",
+    "type": "page",
+    "href": "https://twitter.com/shuding_",
+    "newWindow": true
+  }
+}
