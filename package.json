@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/clburlison/docs.git"
+    "url": "git+https://github.com/unownhash/docs.git"
   },
   "author": "Clayton Burlison <git@clburlison.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/clburlison/docs/issues"
+    "url": "https://github.com/unownhash/docs/issues"
   },
-  "homepage": "https://github.com/clburlison/docs#readme",
+  "homepage": "https://github.com/unownhash/docs#readme",
   "dependencies": {
     "next": "^13.0.6",
     "nextra": "latest",

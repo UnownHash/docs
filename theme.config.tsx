@@ -38,12 +38,12 @@ l33 0 -14 -47 c-8 -25 -14 -63 -14 -85 l0 -38 -58 0 c-66 0 -92 -18 -92 -62 0
     </>
   ),
   project: {
-    link: "https://github.com/clburlison/docs",
+    link: "https://github.com/unownhash/docs",
   },
   chat: {
     link: "https://discord.gg/Vjze47qchG",
   },
-  docsRepositoryBase: "https://github.com/clburlison/docs",
+  docsRepositoryBase: "https://github.com/unownhash/docs",
   footer: {
     text: "© 2023 Unownhash",
   },
