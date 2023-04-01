@@ -6,7 +6,7 @@ const withNextra = require('nextra')({
 })
 
 // nextjs config options
-module.exports = withNextra({
+let nextConfig = {
   images: {
     remotePatterns: [
       {
@@ -23,4 +23,12 @@ module.exports = withNextra({
       },
     ],
   },
-})
+}
+
+// Only enable CloudFront Image loader in production
+if (process.env.NODE_ENV === 'production') {
+  nextConfig.images.loader = 'custom'
+  nextConfig.images.loaderFile = './imageLoader.js'
+}
+
+module.exports = withNextra(nextConfig)
