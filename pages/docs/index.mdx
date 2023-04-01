@@ -1,3 +1,98 @@
-# Documentation
+import { Callout } from 'nextra-theme-docs'
 
-This is the index page for the Docs folder!
+# Getting Started
+
+<Callout type="warning" emoji="⚠️">
+  Some of these steps will fail since Flygon is not public yet!
+</Callout>
+
+1. Install [Docker](https://docs.docker.com/engine/install/)
+
+1. Setup a database server
+
+   Please see [Database Setup](./docs/other/database) if you need help with this step.
+
+   - MariaDB 10.6 or higher (recommended)
+   - MySQL 8 or higher
+
+1. Download the docker-compose example file
+
+   ```sh
+   wget -O docker-compose.yml https://raw.githubusercontent.com/UnownHash/Flygon/main/docker-compose.yml.example
+   ```
+
+1. Download Flygon config file
+
+   ```sh
+   wget -O flygon_config.toml https://raw.githubusercontent.com/UnownHash/Flygon/main/config.toml.example
+   ```
+
+1. Download Golbat config file
+
+   ```sh
+   wget -O golbat_config.toml https://raw.githubusercontent.com/UnownHash/Golbat/main/config.toml.example
+   ```
+
+1. Modify your two config files and docker-compose files
+
+   Make sure to update the highlighted lines from our snippets into your config files.
+
+   > **Note**: this doesn't cover 100% of the configuration just the basics to get you started. We **highly recommend** setting a `raw_bearer` secret if these services are accessible from the public internet.
+
+   ```toml filename="flygon_config.toml" {2,4,7-11}
+   [processors]
+   golbat_endpoint = "http://golbat:9001"
+   golbat_raw_bearer = ""
+   golbat_api_secret = ""
+
+   [db]
+   host = "0.0.0.0"
+   port = 3306
+   user = ""
+   password = ""
+   name = "flygon"
+   ```
+
+   ```toml filename="golbat_config.toml" {1, 4-7}
+   api_secret = "golbat"   # Golbat secret required on api calls (blank for none)
+
+   [database]
+   user = ""
+   password = ""
+   address = "127.0.0.1:3306"
+   db = ""
+   ```
+
+   ```yml filename="docker-compose.yml" {7,8,11,14}
+   ...
+   admin:
+     image: ghcr.io/unownhash/flygon-admin:main
+     container_name: admin
+     restart: unless-stopped
+     environment:
+       ADMIN_GENERAL_USERNAME: admin
+       ADMIN_GENERAL_PASSWORD: password
+
+       ADMIN_FLYGON_API_ENDPOINT: http://flygon:9002
+       ADMIN_FLYGON_API_SECRET: secret
+
+       ADMIN_GOLBAT_API_ENDPOINT: http://golbat:9001
+       ADMIN_GOLBAT_API_SECRET: secret
+    ...
+   ```
+
+1. Start the services
+
+   ```sh
+   docker-compose pull
+   docker-compose up -d
+   ```
+
+## Modify MITM client
+
+Point your MITM clients to `http://YOUR_IP:9002/` (assuming default port).
+
+<Callout type="info" emoji="💡">
+  For [DeviceConfigManager](https://github.com/versx/deviceconfigmanager) this
+  same URI should be used for both Backend & Data Endpoint.
+</Callout>

@@ -2,6 +2,28 @@ import React from "react";
 import { DocsThemeConfig } from "nextra-theme-docs";
 
 const config: DocsThemeConfig = {
+  banner: {
+    key: "001-wip-docs",
+    text: <a href="/">👷 🔨 Site is a under construction! 🚧 🚦</a>,
+  },
+  project: {
+    link: "https://github.com/unownhash/",
+  },
+  chat: {
+    link: "https://discord.gg/Vjze47qchG",
+  },
+  feedback: {
+    content: null,
+  },
+  docsRepositoryBase: "https://github.com/unownhash/docs",
+  footer: {
+    text: "© 2023 Unownhash",
+  },
+  useNextSeoProps() {
+    return {
+      titleTemplate: "%s",
+    };
+  },
   logo: (
     <>
       {/* https://theonlineconverter.com/convert-png-to-svg */}
@@ -37,16 +59,19 @@ l33 0 -14 -47 c-8 -25 -14 -63 -14 -85 l0 -38 -58 0 c-66 0 -92 -18 -92 -62 0
       <span style={{ marginLeft: ".4em", fontWeight: 800 }}>Unownhash</span>
     </>
   ),
-  project: {
-    link: "https://github.com/unownhash/docs",
-  },
-  chat: {
-    link: "https://discord.gg/Vjze47qchG",
-  },
-  docsRepositoryBase: "https://github.com/unownhash/docs",
-  footer: {
-    text: "© 2023 Unownhash",
-  },
+  head: (
+    <>
+      <link rel="icon" href="/favicon.png" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <meta property="og:title" content="Kōji" />
+      <meta property="og:type" content="website" />
+      <meta
+        property="og:description"
+        content="Documentation for Unownhash projects."
+      />
+      <meta property="og:image" content="/favicon.png" />
+    </>
+  ),
 };
 
 export default config;

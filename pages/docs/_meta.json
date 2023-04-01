@@ -1,8 +1,16 @@
 {
-  "index": "Documentation",
-  "getting-started": "Getting Started",
+  "index": "Getting Started",
   "golbat": "Golbat",
   "flygon": "Flygon",
-  "another": "Another Demo Page",
+  "--": {
+    "type": "separator",
+    "title": ""
+  },
+  "help": "Getting Help",
+  "contributing": "Contributing",
+  "---": {
+    "type": "separator",
+    "title": ""
+  },
   "other": "Other"
 }
