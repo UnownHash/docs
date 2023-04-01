@@ -8,20 +8,8 @@ const withNextra = require('nextra')({
 // nextjs config options
 let nextConfig = {
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'raw.githubusercontent.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'user-images.githubusercontent.com',
-        port: '',
-        pathname: '/**',
-      },
-    ],
+    // Cloudflare Pages doesn't support optimized images
+    unoptimized: true,
   },
 }
 
