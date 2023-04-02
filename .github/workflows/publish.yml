@@ -15,23 +15,16 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16.x
+          cache: 'yarn'
+          cache-dependency-path: 'yarn.lock'
 
-      - name: Run install
-        uses: borales/actions-yarn@v4
-        with:
-          cmd: install
-
-      - name: Build static site
-        uses: borales/actions-yarn@v4
-        with:
-          cmd: export
+      - run: yarn install --frozen-lockfile
+      - run: yarn export
 
       - name: Publish to Cloudflare Pages
         uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: "unownhash"
+          projectName: 'unownhash'
           directory: out
-          # Optional: Enable this if you want to have GitHub Deployments triggered
-          # gitHubToken: ${{ secrets.GITHUB_TOKEN }}
