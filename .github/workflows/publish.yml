@@ -6,6 +6,7 @@ jobs:
     permissions:
       contents: read
       deployments: write
+      pull-requests: write
     name: Publish to Cloudflare Pages
     steps:
       # https://github.com/cloudflare/pages-action/issues/16#issuecomment-1398478711
@@ -44,6 +45,7 @@ jobs:
           directory: out
 
       - name: Comment deploy url
+        if: github.event_name != 'push'
         uses: mshick/add-pr-comment@v2
         with:
           message-id: cloudflare-deploy
