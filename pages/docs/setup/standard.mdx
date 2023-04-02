@@ -6,7 +6,7 @@ import { Callout } from 'nextra-theme-docs'
   Some of these steps will fail since Flygon is not public yet!
 </Callout>
 
-## Pre Requisites
+## Prerequisites
 
 - [Go 1.20](https://go.dev/doc/install)
 - [Node 18](https://nodejs.org/en/download)
@@ -49,7 +49,7 @@ import { Callout } from 'nextra-theme-docs'
   To compile a static binary run
 
   ```sh
-  go build golbat
+  go build
   ```
 
 </Callout>
@@ -92,7 +92,7 @@ import { Callout } from 'nextra-theme-docs'
   To compile a static binary run (useful for the PM2 section later)
 
   ```sh
-  go build golbat
+  go build
   ```
 
 </Callout>
@@ -121,17 +121,12 @@ import { Callout } from 'nextra-theme-docs'
 
     - `username`, `password`, and `api_secrets` settings
 
-1. Compile the client
+1. Compile the client, server and run the service
 
     ```sh
     cd client
     yarn install
     yarn build
-    ```
-
-1. Build and run the service
-
-    ```sh
     cd ../server
     go run .
     ```
@@ -140,15 +135,18 @@ import { Callout } from 'nextra-theme-docs'
   To compile a static binary run (useful for the PM2 section later)
 
   ```sh
-  cd server
+  cd client && yarn install && yarn build
+  cd ../server
   go build
   ```
+
+  Remember that Flygon-Admin is two parts so you need to build the client when updating or making changes to the frontend code!
 
 </Callout>
 
 ## PM2
 
-All services are now setup but navigating to each folder and using `go run .` is not ideal for servers. Instead we will use `pm2` which will maintain the lifecycle of the service, restarting, and optionally starting it on server reboot.
+All services are now setup but navigating to each folder and using `go run .` is not ideal for servers. Instead we will use `pm2` which will maintain the lifecycle of the service, restarting, and optionally starting it on server reboot (`pm2 startup`).
 
 ### Standard Setup
 
@@ -176,14 +174,16 @@ Instead of creating each service individually we can use an [PM2 - Ecosystem Fil
 1. Navigate to each folder and compile a static binary
 
     ```sh
-    cd /path/to/Golbat && go build golbat
-    cd /path/to/Flygon && go build flygon
-    cd /path/to/Flygon-Admin/server && go build server
+    cd /path/to/Golbat && go build
+    cd /path/to/Flygon && go build
+    cd /path/to/Flygon-Admin/server && go build
     ```
 
-1. Create your config file make sure to update your paths
+1. Create your config file
 
-    ```js filename="ecosystem.config.js"
+    Make sure to update your `cmd` paths and optionally modify the `max_memory_restart` setting.
+
+    ```js filename="ecosystem.config.js" {6,15,24}
     module.exports = {
       apps : [
         {
@@ -224,24 +224,35 @@ Instead of creating each service individually we can use an [PM2 - Ecosystem Fil
     pm2 save
     ```
 
-## Updating all projects
+## Updating a single project
 
-1. Stop services
-1. Pull latest git changes
-1. Compile all
-1. Start all services
+Since each service is an individual component it is possible to update just one.
+
+Below example is for Flygon but Golbat & Flygon-Admin are the exact same. Just remember to build your client for Flygon-Admin!
+
+1. Change into that projects directory
+
+    ```sh
+    cd Flygon
+    ```
+
+1. Pull latest git changes and compile
+
+    ```sh
+    git pull && go build
+    ```
 
 ### Update script
 
-The above is kind of painful to complete each time an update is release but as long as you used the default paths mentioned above you can use the following script. Make sure to update the first variable.
+If you wish to update all components do not want to worry about forgetting a step you can use the following script. This will update all services at once.
+
+Make sure to update the hightlighted path variable on line 2.
 
 1. Copy the below script
 
     ```sh filename="update-unownhash.sh" {2}
     #!/usr/bin/env bash
     START_DIR=/home/username
-
-    pm2 stop golbat flygon flygon-admin
 
     echo "Updating Golbat"
     cd "$START_DIR"/Golbat
@@ -263,7 +274,7 @@ The above is kind of painful to complete each time an update is release but as l
     go build
 
     cd ~
-    pm2 start golbat flygon flygon-admin
+    pm2 restart golbat flygon flygon-admin
 
     echo "All services have been updated"
     ```
@@ -274,7 +285,7 @@ The above is kind of painful to complete each time an update is release but as l
     chmod +x update-unownhash.sh
     ```
 
-1. When there is an update
+1. Run the script
 
     ```sh
     ./update-unownhash.sh
