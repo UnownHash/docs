@@ -6,25 +6,14 @@ import { Callout } from 'nextra-theme-docs'
   Some of these steps will fail since Flygon is not public yet!
 </Callout>
 
-1. Install [Docker](https://docs.docker.com/engine/install/)
+## Pre Requisites
 
-1. Setup a database server
+- [Docker](https://docs.docker.com/engine/install/)
+- Compatible Database - See [Database Setup](/docs/other/database)
 
-    Please see [Database Setup](/docs/other/database) if you need help with this step.
-
-    - MariaDB 10.6 or higher (recommended)
-    - MySQL 8 or higher
+## Install services with Docker
 
 1. Download the docker-compose example file
-
-    <Callout type="info" emoji="💡">
-        If you want logs and cache files outside of docker via the mount paths make sure to create those directories.
-
-    ```sh
-    mkdir logs cache
-    ```
-
-    </Callout>
 
     ```yml filename="docker-compose.yml"
     version: "3.7"
@@ -83,8 +72,17 @@ import { Callout } from 'nextra-theme-docs'
             ADMIN_GOLBAT_API_SECRET: secret
           ports:
             - "9003:9003" # change left one for external port
-
     ```
+
+    <Callout type="info" emoji="ℹ️">
+        If you want logs and cache files outside of docker go ahead and create your directories now.
+
+    ```sh
+    mkdir logs cache
+    ```
+
+    </Callout>
+
 
 1. Download Flygon config file
 
@@ -148,7 +146,7 @@ import { Callout } from 'nextra-theme-docs'
 
 1. Start the services
 
-    <Callout type="info" emoji="💡">
+    <Callout type="info" emoji="ℹ️">
         If this is the first time using GitHub container registry you will need to login. When prompted use your personal access token **not** password. [More info](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-with-a-personal-access-token-classic)
 
     ```sh
@@ -161,12 +159,3 @@ import { Callout } from 'nextra-theme-docs'
     docker-compose pull
     docker-compose up -d
     ```
-
-## Modify MITM client
-
-Point your MITM clients to `http://YOUR_IP:9002/` (assuming default port).
-
-<Callout type="info" emoji="💡">
-  For [DeviceConfigManager](https://github.com/versx/deviceconfigmanager) this
-  same URI should be used for both Backend & Data Endpoint.
-</Callout>

@@ -13,3 +13,12 @@ This guide walks you through what to do after you have completed the Docker or S
 I know you want me to go setup _yet another_ thing but this is important as Koji helps you visualize and create routes. This will save time down the road. Go check out the [Koji Docs](https://koji.vercel.app).
 
 Now that you have configured the service go modify your **Golbat** and **Flygon** config files.
+
+## Modify MITM client
+
+Point your MITM clients to `http://YOUR_IP:9002/` (assuming default port).
+
+<Callout type="info" emoji="ℹ️">
+  For [DeviceConfigManager](https://github.com/versx/deviceconfigmanager) this
+  same URI should be used for both Backend & Data Endpoint.
+</Callout>
