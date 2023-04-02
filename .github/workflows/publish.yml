@@ -18,7 +18,7 @@ jobs:
           cache: 'yarn'
           cache-dependency-path: 'yarn.lock'
 
-      - run: yarn install --frozen-lockfile
+      - run: yarn install --frozen-lockfile --production
       - run: yarn export
 
       - name: Publish to Cloudflare Pages
