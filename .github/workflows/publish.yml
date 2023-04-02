@@ -15,16 +15,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16.x
+          cache: 'yarn'
 
-      - name: Run install
-        uses: borales/actions-yarn@v4
-        with:
-          cmd: install
-
-      - name: Build static site
-        uses: borales/actions-yarn@v4
-        with:
-          cmd: export
+      - run: yarn install --frozen-lockfile
+      - run: yarn export
 
       - name: Publish to Cloudflare Pages
         uses: cloudflare/pages-action@v1
@@ -33,10 +27,3 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: 'unownhash'
           directory: out
-      - name: Adding markdown summary
-        run: |
-          echo "### Run complete! 👾" >> $GITHUB_STEP_SUMMARY
-          echo "**ID:** ${{ steps.publish.outputs.id }}" >> $GITHUB_STEP_SUMMARY
-          echo "**URL:** ${{ steps.publish.outputs.url }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Environment:** ${{ steps.publish.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Alias:** ${{ steps.publish.outputs.alias }}" >> $GITHUB_STEP_SUMMARY
