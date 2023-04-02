@@ -31,7 +31,12 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: "unownhash"
+          projectName: 'unownhash'
           directory: out
-          # Optional: Enable this if you want to have GitHub Deployments triggered
-          # gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: Adding markdown summary
+        run: |
+          echo "### Run complete! 👾" >> $GITHUB_STEP_SUMMARY
+          echo "**ID:** ${{ steps.publish.outputs.id }}" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** ${{ steps.publish.outputs.url }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ steps.publish.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Alias:** ${{ steps.publish.outputs.alias }}" >> $GITHUB_STEP_SUMMARY
