@@ -1,28 +1,28 @@
-import React from "react";
-import { DocsThemeConfig } from "nextra-theme-docs";
+import React from 'react'
+import { DocsThemeConfig } from 'nextra-theme-docs'
 
 const config: DocsThemeConfig = {
   banner: {
-    key: "001-wip-docs",
+    key: '001-wip-docs',
     text: <a href="/">👷 🔨 Site is a under construction! 🚧 🚦</a>,
   },
   project: {
-    link: "https://github.com/unownhash/",
+    link: 'https://github.com/unownhash/',
   },
   chat: {
-    link: "https://discord.gg/Vjze47qchG",
+    link: 'https://discord.gg/Vjze47qchG',
   },
   feedback: {
     content: null,
   },
-  docsRepositoryBase: "https://github.com/unownhash/docs",
+  docsRepositoryBase: 'https://github.com/unownhash/docs/edit/main',
   footer: {
-    text: "© 2023 Unownhash",
+    text: '© 2023 Unownhash',
   },
   useNextSeoProps() {
     return {
-      titleTemplate: "%s",
-    };
+      titleTemplate: '%s',
+    }
   },
   logo: (
     <>
@@ -56,7 +56,7 @@ l33 0 -14 -47 c-8 -25 -14 -63 -14 -85 l0 -38 -58 0 c-66 0 -92 -18 -92 -62 0
           />
         </g>
       </svg>
-      <span style={{ marginLeft: ".4em", fontWeight: 800 }}>Unownhash</span>
+      <span style={{ marginLeft: '.4em', fontWeight: 800 }}>Unownhash</span>
     </>
   ),
   head: (
@@ -72,6 +72,6 @@ l33 0 -14 -47 c-8 -25 -14 -63 -14 -85 l0 -38 -58 0 c-66 0 -92 -18 -92 -62 0
       <meta property="og:image" content="/favicon.png" />
     </>
   ),
-};
+}
 
-export default config;
+export default config
