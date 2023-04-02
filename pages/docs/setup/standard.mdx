@@ -1,0 +1,280 @@
+import { Callout } from 'nextra-theme-docs'
+
+# Standard
+
+<Callout type="warning" emoji="⚠️">
+  Some of these steps will fail since Flygon is not public yet!
+</Callout>
+
+## Pre Requisites
+
+- [Go 1.20](https://go.dev/doc/install)
+- [Node 18](https://nodejs.org/en/download)
+- [Yarn 1.22](https://classic.yarnpkg.com/lang/en/docs/install)
+- [Git](https://git-scm.com/downloads) _(`git` might be pre-installed)_
+- [PM2](https://pm2.io/docs/runtime/guide/installation/) `yarn global add pm2`
+
+## Install Golbat
+
+1. Clone repo
+
+    ```sh
+    git clone https://github.com/UnownHash/Golbat.git
+    ```
+
+1. Change into cloned repo
+
+    ```sh
+    cd Golbat
+    ```
+
+1. Create `config.toml` from example file
+
+    ```sh
+    cp config.toml.example config.toml
+    ```
+
+1. Modify your config file. Minimum requirement:
+
+    - database settings
+
+1. Build and run the service
+
+    ```sh
+    go run .
+    ```
+
+<Callout type="info" emoji="ℹ️">
+  To compile a static binary run
+
+  ```sh
+  go build golbat
+  ```
+
+</Callout>
+
+## Install Flygon
+
+1. Clone repo
+
+    ```sh
+    git clone https://github.com/UnownHash/Flygon.git
+    ```
+
+1. Change into cloned repo
+
+    ```sh
+    cd Flygon
+    ```
+
+1. Create `config.toml` from example file
+
+    ```sh
+    cp config.toml.example config.toml
+    ```
+
+1. Modify your config file. Minimum requirement:
+
+    - database settings
+    - `golbat_*` settings
+    - switch `raw_endpoints = []` if you aren't sending to another location
+
+    > Additionally, we **highly recommend** setting a the `raw_bearer`, `api_secret` and `bearer_token` keys if this service is accessible from the public internet.
+
+1. Build and run the service
+
+    ```sh
+    go run .
+    ```
+
+<Callout type="info" emoji="ℹ️">
+  To compile a static binary run (useful for the PM2 section later)
+
+  ```sh
+  go build golbat
+  ```
+
+</Callout>
+
+## Install Flygon-Admin
+
+1. Clone repo
+
+    ```sh
+    git clone https://github.com/UnownHash/Flygon-Admin.git
+    ```
+
+1. Change into cloned repo
+
+    ```sh
+    cd Flygon-Admin
+    ```
+
+1. Create `config.toml` from example file
+
+    ```sh
+    cp config.toml.example config.toml
+    ```
+
+1. Modify your config file. Minimum requirement:
+
+    - `username`, `password`, and `api_secrets` settings
+
+1. Compile the client
+
+    ```sh
+    cd client
+    yarn install
+    yarn build
+    ```
+
+1. Build and run the service
+
+    ```sh
+    cd ../server
+    go run .
+    ```
+
+<Callout type="info" emoji="ℹ️">
+  To compile a static binary run (useful for the PM2 section later)
+
+  ```sh
+  cd server
+  go build
+  ```
+
+</Callout>
+
+## PM2
+
+All services are now setup but navigating to each folder and using `go run .` is not ideal for servers. Instead we will use `pm2` which will maintain the lifecycle of the service, restarting, and optionally starting it on server reboot.
+
+### Standard Setup
+
+1. Navigate to each service folder and compile a static binary
+
+    ```sh
+    cd /path/to/Golbat && go build golbat
+    cd /path/to/Flygon && go build flygon
+    cd /path/to/Flygon-Admin/server && go build
+    ```
+
+1. Run the following to start and save a service
+
+   ```sh
+    pm2 start ./golbat --name golbat -o "/dev/null"
+    pm2 save
+    ```
+
+    > Replace 'golbat' with 'flygon' or 'server' (for Flygon-Admin)
+
+### Ecosystem File
+
+Instead of creating each service individually we can use an [PM2 - Ecosystem File](https://pm2.keymetrics.io/docs/usage/application-declaration/).
+
+1. Navigate to each folder and compile a static binary
+
+    ```sh
+    cd /path/to/Golbat && go build golbat
+    cd /path/to/Flygon && go build flygon
+    cd /path/to/Flygon-Admin/server && go build server
+    ```
+
+1. Create your config file make sure to update your paths
+
+    ```js filename="ecosystem.config.js"
+    module.exports = {
+      apps : [
+        {
+            name: 'golbat',
+            script: 'golbat',
+            cwd: '/home/username/Golbat/',
+            instances: 1,
+            autorestart: true,
+            log_date_format: "YYYY-MM-DD HH:mm",
+            max_memory_restart: '4G'
+        },
+        {
+            name: 'flygon',
+            script: 'flygon',
+            cwd: '/home/username/Flygon/',
+            instances: 1,
+            autorestart: true,
+            log_date_format: "YYYY-MM-DD HH:mm",
+            max_memory_restart: '4G'
+        },
+        {
+            name: 'flygon-admin',
+            script: 'server',
+            cwd: '/home/username/Flygon-Admin/server',
+            instances: 1,
+            autorestart: true,
+            log_date_format: "YYYY-MM-DD HH:mm",
+            max_memory_restart: '1G'
+        }
+      ]
+    }
+    ```
+
+1. Start and save the services
+
+    ```sh
+    pm2 start ecosystem.config.js
+    pm2 save
+    ```
+
+## Updating all projects
+
+1. Stop services
+1. Pull latest git changes
+1. Compile all
+1. Start all services
+
+### Update script
+
+The above is kind of painful to complete each time an update is release but as long as you used the default paths mentioned above you can use the following script. Make sure to update the first variable.
+
+1. Copy the below script
+
+    ```sh filename="update-unownhash.sh" {2}
+    #!/usr/bin/env bash
+    START_DIR=/home/username
+
+    pm2 stop golbat flygon flygon-admin
+
+    echo "Updating Golbat"
+    cd "$START_DIR"/Golbat
+    git pull
+    go build golbat
+
+    echo "Updating Flygon"
+    cd "$START_DIR"/Flygon
+    git pull
+    go build flygon
+
+    echo "Updating Flygon-Admin"
+    cd "$START_DIR"/Flygon-Admin/
+    git pull
+    cd "$START_DIR"/Flygon-Admin/client
+    yarn install
+    yarn build
+    cd "$START_DIR"/Flygon-Admin/server
+    go build
+
+    cd ~
+    pm2 start golbat flygon flygon-admin
+
+    echo "All services have been updated"
+    ```
+
+1. Make the script executable
+
+    ```sh
+    chmod +x update-unownhash.sh
+    ```
+
+1. When there is an update
+
+    ```sh
+    ./update-unownhash.sh
+    ```
