@@ -15,6 +15,9 @@ const config: DocsThemeConfig = {
   feedback: {
     content: null,
   },
+  sidebar: {
+    defaultMenuCollapseLevel: 1,
+  },
   docsRepositoryBase: 'https://github.com/unownhash/docs/edit/main',
   footer: {
     text: '© 2023 Unownhash',
