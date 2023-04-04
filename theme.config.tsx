@@ -2,10 +2,10 @@ import React from 'react'
 import { DocsThemeConfig } from 'nextra-theme-docs'
 
 const config: DocsThemeConfig = {
-  banner: {
-    key: '001-wip-docs',
-    text: <a href="/">👷 🔨 Site is a under construction! 🚧 🚦</a>,
-  },
+  //   banner: {
+  //     key: '001-wip-docs',
+  //     text: <a href="/">👷 🔨 Site is under construction! 🚧 🚦</a>,
+  //   },
   project: {
     link: 'https://github.com/unownhash/',
   },
