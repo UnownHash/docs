@@ -1,6 +1,6 @@
 # Database
 
-In order to use the services you will need database server with two different databases configured. One for **Golbat** and one for **Flygon**.
+To use the Unown# services, you will need a database server with two different databases configured. One for **Golbat** and one for **Flygon**.
 
 ## Supported
 
@@ -32,7 +32,7 @@ volumes:
     driver: local
 ```
 
-Once the service is up you will need to connect to the database service with [TablePlus](https://tableplus.com/), [Workbench](https://www.mysql.com/products/workbench/), Command Line, etc.
+Once the service is up, you will need to connect to the database service with [TablePlus](https://tableplus.com/), [Workbench](https://www.mysql.com/products/workbench/), Command Line, etc.
 
 1. Create a database for flygon
 1. Create a database for golbat
@@ -45,15 +45,15 @@ These options can help you quite significantly with performance.
 # This should be 50% of RAM, leaving space for golbat
 innodb_buffer_pool_size = 64G
 
-# Log file size, should certainly be >= 1GB, but on a big system this is more appropriate
+# Log file size should certainly be >= 1GB, but on a big system, this is more appropriate
 innodb_log_file_size = 16G
 
-# This should be number of cores
+# This should be the number of cores
 innodb_read_io_threads = 10
 innodb_write_io_threads = 10
 innodb_purge_threads = 10
 
-# Some people receommend at least 1 per gb, so could be increased above
+# Some people recommend at least 1 per gb, so could be increased above
 innodb_buffer_pool_instances = 8
 
 # allow big sorts, in memory temp tables
