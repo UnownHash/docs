@@ -3,21 +3,24 @@ import { Callout } from "nextra-theme-docs";
 # Welcome to Unownhash!
 
 <Callout type="warning" emoji="⚠️">
-  We are still in development stage as such there might be bugs and some
-  features are **missing**.
+  We are still in the development stage; there might be bugs, and some features are **missing**.
 </Callout>
 
-We are a passionate group of developers working on a mapping project for Pokémon Go. We aren't finished yet but wanted to open things up to start getting feedback from the community!
+We are a passionate group of developers working on a mapping project for Pokémon Go. While just getting started, we wanted to open things up to start getting feedback from the community!
+
+## Why did you make this?
+
+We wanted to try something new, and the early results have been promising. The current tools in this space have been around for a few years. As such, they are stable, but increasingly difficult to add new features. Unownhash allows us to re-think legacy ideas, rebuild from the ground up, and build a better user experience for all involved.
 
 ## What is this?
 
-- **Golbat** - is our data processor. It's primary purpose is to listen for events, format them into something useful, store to database, and send webhooks to external services.
-- **Flygon** - is our device handler. Devices will reach out to this service to grab jobs, accounts, and routes.
+- **Golbat** - is our data processor. Its primary purpose is to listen for events, format them into something useful, store them in a database, and send webhooks to external services.
+- **Flygon** - is our device handler. Devices will contact this service to grab jobs, accounts, and routes.
 - **Flygon-Admin** - this is our web frontend to manage the Flygon service.
 
 ## Features
 
-Extremely customizable and highly optimized processing of game data. The services are written in the Go programming language which provides a great developer experience, excellent concurrency, great memory management, efficient, fast HTTP handling, and more. Additionally our design is using micro-services which allows for large flexibility, if you need to split services between multiple servers we have you covered.
+Each service is incredibly customizable and highly optimized. The services are written in the Go programming language, providing a great developer experience, excellent concurrency, great memory management, fast HTTP handling, and more. Additionally, our design uses micro-services which allows for significant flexibility. We have you covered if you need to split services between multiple servers.
 
 Some of our highlighted features:
 

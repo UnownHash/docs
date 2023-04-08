@@ -224,11 +224,13 @@ Instead of creating each service individually we can use an [PM2 - Ecosystem Fil
     pm2 save
     ```
 
-## Updating a single project
+## Updating
 
-Since each service is an individual component it is possible to update just one.
+### One project
 
-Below example is for Flygon but Golbat & Flygon-Admin are the exact same. Just remember to build your client for Flygon-Admin!
+Since each service is an individual component it is possible to update just one. IE - no need to stop our data parser (Golbat) because the device controller (Flygon) has an update.
+
+> Below example is for Flygon but Golbat & Flygon-Admin are the exact same. Just remember to build your client for Flygon-Admin!
 
 1. Change into that projects directory
 
@@ -242,7 +244,7 @@ Below example is for Flygon but Golbat & Flygon-Admin are the exact same. Just r
     git pull && go build
     ```
 
-### Update script
+### All projects
 
 If you wish to update all components do not want to worry about forgetting a step you can use the following script. This will update all services at once.
 

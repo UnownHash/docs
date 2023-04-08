@@ -1,8 +1,8 @@
 {
   "index": "Introduction",
+  "setup": "Getting Started",
   "golbat": "Golbat",
   "flygon": "Flygon",
-  "setup": "Getting Started",
   "--": {
     "type": "separator",
     "title": ""
