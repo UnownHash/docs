@@ -124,25 +124,15 @@ import { Callout } from 'nextra-theme-docs'
 1. Compile the client, server and run the service
 
     ```sh
-    cd client
     yarn install
     yarn build
-    cd ../server
-    go run .
+    yarn start
     ```
 
 <Callout type="info" emoji="ℹ️">
-  To compile a static binary run (useful for the PM2 section later)
-
-  ```sh
-  cd client && yarn install && yarn build
-  cd ../server
-  go build
-  ```
-
-  Remember that Flygon-Admin is two parts so you need to build the client when updating or making changes to the frontend code!
-
+    Skip `yarn start` if you plan to run Flygon-Admin in PM2
 </Callout>
+
 
 ## PM2
 
@@ -207,7 +197,7 @@ Instead of creating each service individually we can use an [PM2 - Ecosystem Fil
         {
             name: 'flygon-admin',
             script: 'server',
-            cwd: '/home/username/Flygon-Admin/server',
+            cwd: '/home/username/Flygon-Admin/dist/server',
             instances: 1,
             autorestart: true,
             log_date_format: "YYYY-MM-DD HH:mm",
@@ -269,11 +259,8 @@ Make sure to update the hightlighted path variable on line 2.
     echo "Updating Flygon-Admin"
     cd "$START_DIR"/Flygon-Admin/
     git pull
-    cd "$START_DIR"/Flygon-Admin/client
     yarn install
     yarn build
-    cd "$START_DIR"/Flygon-Admin/server
-    go build
 
     cd ~
     pm2 restart golbat flygon flygon-admin
