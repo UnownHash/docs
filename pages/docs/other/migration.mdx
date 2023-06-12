@@ -1,0 +1,88 @@
+import { Callout } from 'nextra-theme-docs'
+
+# Migrating Data
+
+Most data can be regenerated relatively quickly; however, migrating some tables like `spawnpoint` can be beneficial as that table takes a long time to populate. Golbat currently has a database schema similar to RealDeviceMap, but it is not a one-to-one match, making migration a little more cumbersome. There are SQL GUI tools that will make this easier, but for portability, we will be using the `mysql` command line tool to demonstrate.
+
+If it needs clarification, we will migrate our old RealDeviceMap spawnpoint table to our newly created Golbat spawnpoint table. It is best to turn off the Golbat service while running through this migration to avoid table locks.
+
+## Backing up your spawnpoints
+
+1. Connect to your database instance
+1. `mysql -u <username> -p`
+    <Callout type="info" emoji="ℹ️">
+    For databases in docker
+
+    ```bash
+    docker exec -it <container-name> bash
+    ```
+
+    </Callout>
+1. Enter your password on the new line
+
+   ```bash
+    bash-4.4# mysql -u <username> -p
+    Enter password: 
+    Welcome to the MySQL monitor. Commands end with ; or \g.
+    Your MySQL connection id is 12345678
+    Server version: 8.0.33 MySQL Community Server - GPL
+
+    Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+    mysql> 
+    ```
+
+1. Once you see the `mysql>` prompt, you are ready to move forward
+1. Run the following query to determine if you have a secure file location. If it returns a path, you must save files to this location.
+
+   ```bash
+   SHOW VARIABLES LIKE "secure_file_priv";
+   ```
+
+    Example output:
+
+   ```bash
+    +------------------+-----------------------+
+    | Variable_name    | Value                 |
+    +------------------+-----------------------+
+    | secure_file_priv | /var/lib/mysql-files/ |
+    +------------------+-----------------------+
+    1 row in set (0.00 sec)
+   ```
+
+1. Select all spawnpoints seen in the past 14 days and save them to a file on disk. Update the database table (`rdmdb` in this example) and adjust the `WHERE` clause to your preference.
+
+    ```bash
+    SELECT id, lat, lon, updated, last_seen, despawn_sec from rdmdb.spawnpoint WHERE last_seen < UNIX_TIMESTAMP() - 3600*24*14 INTO OUTFILE '/var/lib/mysql-files/spawnpoint';
+    ```
+
+1. If you are moving to a new database, server, etc copy the above file `/var/lib/mysql-files/spawnpoint` to your new location.
+
+    <Callout type="info" emoji="ℹ️">
+    For databases in docker
+
+    ```bash
+    docker cp <container-name>:/var/lib/mysql-files/spawnpoint .
+    ```
+
+    </Callout>
+
+
+## Restoring your spawnpoints
+
+1. Make sure you have the filepath from the above export
+2. Load the data into your Golbat database. Again, adjust your database name `golbat` in this example.
+
+    ```bash
+    LOAD DATA INFILE '/var/lib/mysql-files/spawnpoint' INTO TABLE golbat.spawnpoint;
+    ```
+
+## Other tables
+
+Generally speaking, you should not migrate other tables. It is just going to cause a headache. You can repeat the above process for other tables, but if the schema has changed drastically, you must add blank export columns for the import to work correctly.
+
+A quick example can be seen with the following query (`null as new_column_name`):
+
+```bash
+SELECT id, lat, lon, null as new_column_name from rdmdb.gym;
+```
