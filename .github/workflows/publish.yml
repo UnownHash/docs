@@ -34,8 +34,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16.x
-          cache: 'yarn'
-          cache-dependency-path: 'yarn.lock'
 
       - run: yarn install --frozen-lockfile
       - run: yarn export
