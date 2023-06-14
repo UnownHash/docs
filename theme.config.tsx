@@ -20,7 +20,7 @@ const config: DocsThemeConfig = {
   },
   docsRepositoryBase: 'https://github.com/unownhash/docs/edit/main',
   footer: {
-    text: '© 2023 Unownhash',
+    text: '© 2023 Unown#',
   },
   useNextSeoProps() {
     return {
@@ -59,7 +59,7 @@ l33 0 -14 -47 c-8 -25 -14 -63 -14 -85 l0 -38 -58 0 c-66 0 -92 -18 -92 -62 0
           />
         </g>
       </svg>
-      <span style={{ marginLeft: '.4em', fontWeight: 800 }}>Unownhash</span>
+      <span style={{ marginLeft: '.4em', fontWeight: 800 }}>Unown#</span>
     </>
   ),
   head: (
@@ -70,7 +70,7 @@ l33 0 -14 -47 c-8 -25 -14 -63 -14 -85 l0 -38 -58 0 c-66 0 -92 -18 -92 -62 0
       <meta property="og:type" content="website" />
       <meta
         property="og:description"
-        content="Documentation for Unownhash projects."
+        content="Documentation for Unown# projects."
       />
       <meta property="og:image" content="/favicon.png" />
     </>
