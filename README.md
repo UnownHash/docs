@@ -1,6 +1,6 @@
-# Unownhash Docs
+# Unown# Docs
 
-Documentation for the unownhash projects: https://unownhash.com/
+Documentation for the Unown# projects: https://unownhash.com/
 
 ## Local Development
 
