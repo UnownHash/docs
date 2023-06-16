@@ -28,7 +28,7 @@ upstream mirrorOne {
 # target of raw mirror two. If you need more /raw mirrors
 # uncomment and add the same way as commented below
 # upstream mirrorTwo {
-#     server RDM_IP_ADDRESS:9001;
+#     server OTHER_IP_ADDRESS:9001;
 # }
 
 server {
@@ -64,14 +64,14 @@ server {
                 proxy_set_header        X-Goforward                     "Forwarded!";
         }
 
-        location = /mirrorTwo {
-                internal;
-                proxy_pass              http://mirrorTwo/raw;
-                proxy_connect_timeout   500ms;
-                proxy_read_timeout      500ms;
-                proxy_set_header        Host                            $host;
-                proxy_set_header        X-Goforward                     "Forwarded!";
-        }
+        #location = /mirrorTwo {
+        #        internal;
+        #        proxy_pass              http://mirrorTwo/raw;
+        #        proxy_connect_timeout   500ms;
+        #        proxy_read_timeout      500ms;
+        #        proxy_set_header        Host                            $host;
+        #        proxy_set_header        X-Goforward                     "Forwarded!";
+        #}
 }
 ```
 
@@ -83,9 +83,7 @@ server {
 
     - RDM_IP_ADDRESS:9001
     - GOLBAT_IP_ADDRESS:9001
-    - Likely need to uncomment the mirrorTwo block
     - Might need to adjust the listen port or server_name
-    - Likely uncomment the second `mirror` under the `/raw` location
 
 4. Restart the nginx service `sudo systemctl restart nginx`
 5. Adjust a few devices to send requests to this nginx endpoint
@@ -127,7 +125,6 @@ Docker configuration is almost the same as manual. If your Golbat & RDM instance
 
     - RDM_IP_ADDRESS:9001
     - GOLBAT_IP_ADDRESS:9001
-    - Likely need to uncomment the mirrorTwo block
 
 5. Start the relay service with `docker compose up -d`
 6. Monitor the logs `docker compose logs -f`
