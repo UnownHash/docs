@@ -53,7 +53,7 @@ If it needs clarification, we will migrate our old RealDeviceMap spawnpoint tabl
 1. Select all spawnpoints seen in the past 14 days and save them to a file on disk. Update the database table (`rdmdb` in this example) and adjust the `WHERE` clause to your preference.
 
     ```bash
-    SELECT id, lat, lon, updated, last_seen, despawn_sec from rdmdb.spawnpoint WHERE last_seen < UNIX_TIMESTAMP() - 3600*24*14 INTO OUTFILE '/var/lib/mysql-files/spawnpoint';
+    SELECT id, lat, lon, updated, last_seen, despawn_sec, unix_timestamp() first_seen from rdmdb.spawnpoint WHERE last_seen > UNIX_TIMESTAMP() - 3600*24*14 INTO OUTFILE '/var/lib/mysql-files/spawnpoint';
     ```
 
 1. If you are moving to a new database, server, etc copy the above file `/var/lib/mysql-files/spawnpoint` to your new location.
