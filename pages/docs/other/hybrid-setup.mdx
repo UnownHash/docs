@@ -3,14 +3,45 @@ import { Callout } from 'nextra-theme-docs'
 # Hybrid Setup
 
 <Callout type="warning" emoji="⚠️">
-  This temporary solution will not be required once Flygon is released.
+  This temporary solution will not be required once Flygon is production ready.
 </Callout>
+
+There are two methods to send data to Golbat while continuing to use the device controller component from RealDeviceMap (RDM). This will allow you take advantage of Golbat's parsing.
+
+## Using RDM Raw Reflection (Recommended)
+
+As of RealDeviceMap (RDM) version 1.51.0 (July 11, 2023) you can use the built-in `raw forward` option. Some notes:
+
+- This only works with the json config option
+- Disabling `application.process.pokemon` and `application.process.incident` are optional however they will save on disk IO
+- When `application.process.pokemon` is disabled:
+  - "Pokemon IV" instances will not function
+  - RDM frontend will not display pokemon
+
+Example configuration:
+
+```json
+{
+  "application": {
+    "rawForward": {
+      "url": "http://yourGolbat:9001/raw",
+      "bearer": "yourGolbatBearerSecret"
+    },
+    "process": {
+      "pokemon": false,
+      "incident": false
+    },
+  }
+}
+```
+
+## Using Nginx (Legacy)
 
 To use the Unown# stack for production purposes, you must supply some middleware to help split webhook requests between Golbat and RealDeviceMap. We will utilize [Nginx]'s mirror functionality to accomplish this task.
 
 The result is data intended for controlling devices will go to `http://RDM:<port>/controler` while raw data goes to `http://RDM:<port>/raw` and `http://GOLBAT:<port>/raw`.
 
-## Nginx Config File
+### Nginx Config File
 
 Credit to [lenisko](https://github.com/jfberry/goforward/issues/1#issue-1528222766) for the original configuration.
 
@@ -75,7 +106,7 @@ server {
 }
 ```
 
-## Manual Setup
+### Manual Setup
 
 1. Install [Nginx]
 2. Copy the above configuration file into `/etc/nginx/confg.d/relay.conf`
@@ -92,7 +123,7 @@ server {
 
 _Note:_ You might want to turn off the `access_log` after verifying success to save on disk IO.
 
-## Docker Setup
+### Docker Setup
 
 Docker configuration is almost the same as manual. If your Golbat & RDM instances are in docker, we recommend you include all three services in one `docker-compose.yml` file or make them all a part of one network. Sharing the same docker network allows services to communicate over their service name.
 
