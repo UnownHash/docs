@@ -2,11 +2,11 @@ import { Callout } from 'nextra-theme-docs'
 
 # Next Steps
 
-<Callout type="info" emoji="🚧">
-  This page is still under construction
-</Callout>
-
 This guide walks you through what to do after you have completed the Docker or Standard setup process. You have things running but now what?
+
+## Setup RDM Raw Reflection
+
+The [Hybrid Setup](/docs/other/hybrid-setup) will allow you to continue using RealDeviceMap (RDM) to control your devices while sending data to Golbat for processing.
 
 ## Configure Koji
 
@@ -16,9 +16,11 @@ Now that you have configured the service go modify your **Golbat** and **Flygon*
 
 ## Modify MITM client
 
-Point your MITM clients to `http://YOUR_IP:9002/` (assuming default port).
-
 <Callout type="info" emoji="ℹ️">
-  For [DeviceConfigManager](https://github.com/versx/deviceconfigmanager) this
-  same URI should be used for both Backend & Data Endpoint.
+  If you are using RDM Raw Mirroring you can skip this section.
 </Callout>
+
+Now that services are configured you need to configure devices to send data requests to the correct endpoint. Some MITM clients only allow one endpoint (Atlas) so Flygon can be used to receive all data and then forward the `/raw` data to Golbat.
+
+- If sending data to Flygon use `http://YOUR_IP:9002/` (assuming default port).
+- If sending data to Golbat you can use `http://YOUR_IP:9001/raw` (assuming default port).
