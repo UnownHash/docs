@@ -30,6 +30,10 @@ services:
 volumes:
   data:
     driver: local
+
+networks:
+  default:
+    name: scanner
 ```
 
 Once the service is up, you will need to connect to the database service with [TablePlus](https://tableplus.com/), [Workbench](https://www.mysql.com/products/workbench/), Command Line, etc.

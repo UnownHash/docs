@@ -1,9 +1,11 @@
 import { Callout } from 'nextra-theme-docs'
 
-# Docker Setup (recommended)
+# Docker Setup
 
 <Callout type="warning" emoji="⚠️">
-  Some of these steps will fail since Flygon is not public yet!
+  Flygon is not public yet!
+
+  If you wish to continue the setup process make sure to comment out or delete the Flygon service. The [Hybrid Setup](/docs/other/hybrid-setup) will allow you to continue using RealDeviceMap (RDM) to control your devices while sending data to Golbat for processing.
 </Callout>
 
 ## Prerequisites
@@ -72,6 +74,10 @@ import { Callout } from 'nextra-theme-docs'
             ADMIN_GOLBAT_API_SECRET: secret
           ports:
             - "9003:9003" # change left one for external port
+
+    networks:
+      default:
+        name: scanner
     ```
 
     <Callout type="info" emoji="ℹ️">
