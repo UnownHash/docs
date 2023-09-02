@@ -18,10 +18,10 @@ services:
     container_name: db
     restart: unless-stopped
     environment:
-    MYSQL_ROOT_PASSWORD: YourStrongRootPassw0rd!
-    MYSQL_DATABASE: _temp
-    MYSQL_USER: unownhash
-    MYSQL_PASSWORD: YourStrongPassw0rd!
+      MYSQL_ROOT_PASSWORD: YourStrongRootPassw0rd!
+      MYSQL_DATABASE: _temp
+      MYSQL_USER: unownhash
+      MYSQL_PASSWORD: YourStrongPassw0rd!
     ports:
       - 3306:3306
     volumes:
