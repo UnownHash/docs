@@ -3,3 +3,13 @@
 [**Golbat**](https://github.com/UnownHash/Golbat) is our data processor. Its job is to accept HTTP requests, format them into something useful, save them to your database, and then send webhooks to external services. It does the heavy processing and is good at it. We have optimized it over some time over some big instances.
 
 Currently, **Golbat** is our most feature-complete service and should be safe to start testing if you wish.
+
+## Supported MITM clients
+
+Any client that is able to output raw game protos should technically be parsable by Golbat. We offer limited support for the following clients.
+
+- [Atlas](https://pokemod.dev/) (Android)
+- [Exeggcute/GC](https://jorgschulze73.github.io/gc-docs/) (iOS and Android)
+- [PogoDroid](https://github.com/Map-A-Droid/MAD)
+
+If any MITM developer would like to be fully compliant with Golbat's parsing specifications feel free to reach out on [Discord](./docs/help).
