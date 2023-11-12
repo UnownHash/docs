@@ -3,9 +3,9 @@ import { Callout } from 'nextra-theme-docs'
 # Standard
 
 <Callout type="warning" emoji="⚠️">
-  Flygon is not public yet!
+  Dragonite is not public yet!
 
-  If you wish to continue the setup process you can skip the Flygon install, build, and run steps. The [Hybrid Setup](/docs/other/hybrid-setup) will allow you to continue using RealDeviceMap (RDM) to control your devices while sending data to Golbat for processing.
+  If you wish to continue the setup process you can skip the Dragonite install, build, and run steps. The [Hybrid Setup](/docs/other/hybrid-setup) will allow you to continue using RealDeviceMap (RDM) to control your devices while sending data to Golbat for processing.
 </Callout>
 
 ## Prerequisites
@@ -56,18 +56,18 @@ import { Callout } from 'nextra-theme-docs'
 
 </Callout>
 
-## Install Flygon
+## Install Dragonite
 
 1. Clone repo
 
     ```sh
-    git clone https://github.com/UnownHash/Flygon.git
+    git clone https://github.com/UnownHash/Dragonite.git
     ```
 
 1. Change into cloned repo
 
     ```sh
-    cd Flygon
+    cd Dragonite
     ```
 
 1. Create `config.toml` from example file
@@ -99,18 +99,18 @@ import { Callout } from 'nextra-theme-docs'
 
 </Callout>
 
-## Install Flygon-Admin
+## Install Dragonite-Admin
 
 1. Clone repo
 
     ```sh
-    git clone https://github.com/UnownHash/Flygon-Admin.git
+    git clone https://github.com/UnownHash/Dragonite-Admin.git
     ```
 
 1. Change into cloned repo
 
     ```sh
-    cd Flygon-Admin
+    cd Dragonite-Admin
     ```
 
 1. Create `config.toml` from example file
@@ -132,7 +132,7 @@ import { Callout } from 'nextra-theme-docs'
     ```
 
 <Callout type="info" emoji="ℹ️">
-    Skip `yarn start` if you plan to run Flygon-Admin in PM2
+    Skip `yarn start` if you plan to run Dragonite-Admin in PM2
 </Callout>
 
 
@@ -146,8 +146,8 @@ All services are now setup but navigating to each folder and using `go run .` is
 
     ```sh
     cd /path/to/Golbat && go build golbat
-    cd /path/to/Flygon && go build flygon
-    cd /path/to/Flygon-Admin/server && go build
+    cd /path/to/Dragonite && go build Dragonite
+    cd /path/to/Dragonite-Admin/server && go build
     ```
 
 1. Run the following to start and save a service
@@ -157,7 +157,7 @@ All services are now setup but navigating to each folder and using `go run .` is
     pm2 save
     ```
 
-    > Replace 'golbat' with 'flygon' or 'server' (for Flygon-Admin)
+    > Replace 'golbat' with 'Dragonite' or 'server' (for Dragonite-Admin)
 
 ### Ecosystem File
 
@@ -167,8 +167,8 @@ Instead of creating each service individually we can use an [PM2 - Ecosystem Fil
 
     ```sh
     cd /path/to/Golbat && go build
-    cd /path/to/Flygon && go build
-    cd /path/to/Flygon-Admin/server && go build
+    cd /path/to/Dragonite && go build
+    cd /path/to/Dragonite-Admin/server && go build
     ```
 
 1. Create your config file
@@ -188,18 +188,18 @@ Instead of creating each service individually we can use an [PM2 - Ecosystem Fil
             max_memory_restart: '4G'
         },
         {
-            name: 'flygon',
-            script: 'flygon',
-            cwd: '/home/username/Flygon/',
+            name: 'Dragonite',
+            script: 'Dragonite',
+            cwd: '/home/username/Dragonite/',
             instances: 1,
             autorestart: true,
             log_date_format: "YYYY-MM-DD HH:mm",
             max_memory_restart: '4G'
         },
         {
-            name: 'flygon-admin',
+            name: 'Dragonite-admin',
             script: 'server',
-            cwd: '/home/username/Flygon-Admin/dist/server',
+            cwd: '/home/username/Dragonite-Admin/dist/server',
             instances: 1,
             autorestart: true,
             log_date_format: "YYYY-MM-DD HH:mm",
@@ -220,14 +220,14 @@ Instead of creating each service individually we can use an [PM2 - Ecosystem Fil
 
 ### One project
 
-Since each service is an individual component it is possible to update just one. IE - no need to stop our data parser (Golbat) because the device controller (Flygon) has an update.
+Since each service is an individual component it is possible to update just one. IE - no need to stop our data parser (Golbat) because the device controller (Dragonite) has an update.
 
-> Below example is for Flygon but Golbat & Flygon-Admin are the exact same. Just remember to build your client for Flygon-Admin!
+> Below example is for Dragonite but Golbat & Dragonite-Admin are the exact same. Just remember to build your client for Dragonite-Admin!
 
 1. Change into that projects directory
 
     ```sh
-    cd Flygon
+    cd Dragonite
     ```
 
 1. Pull latest git changes and compile
@@ -253,19 +253,19 @@ Make sure to update the hightlighted path variable on line 2.
     git pull
     go build golbat
 
-    echo "Updating Flygon"
-    cd "$START_DIR"/Flygon
+    echo "Updating Dragonite"
+    cd "$START_DIR"/Dragonite
     git pull
-    go build flygon
+    go build Dragonite
 
-    echo "Updating Flygon-Admin"
-    cd "$START_DIR"/Flygon-Admin/
+    echo "Updating Dragonite-Admin"
+    cd "$START_DIR"/Dragonite-Admin/
     git pull
     yarn install
     yarn build
 
     cd ~
-    pm2 restart golbat flygon flygon-admin
+    pm2 restart golbat Dragonite Dragonite-admin
 
     echo "All services have been updated"
     ```

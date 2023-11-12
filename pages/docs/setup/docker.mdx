@@ -3,9 +3,9 @@ import { Callout } from 'nextra-theme-docs'
 # Docker Setup
 
 <Callout type="warning" emoji="⚠️">
-  Flygon is not public yet!
+  Dragonite is not public yet!
 
-  If you wish to continue the setup process make sure to comment out or delete the Flygon service. The [Hybrid Setup](/docs/other/hybrid-setup) will allow you to continue using RealDeviceMap (RDM) to control your devices while sending data to Golbat for processing.
+  If you wish to continue the setup process make sure to comment out or delete the Dragonite service. The [Hybrid Setup](/docs/other/hybrid-setup) will allow you to continue using RealDeviceMap (RDM) to control your devices while sending data to Golbat for processing.
 </Callout>
 
 ## Prerequisites
@@ -20,18 +20,18 @@ import { Callout } from 'nextra-theme-docs'
     ```yml filename="docker-compose.yml"
     version: "3.7"
     services:
-      flygon:
-          image: ghcr.io/unownhash/flygon:main
-          container_name: flygon
+      Dragonite:
+          image: ghcr.io/unownhash/Dragonite:main
+          container_name: Dragonite
           restart: unless-stopped
           volumes:
             - type: bind
-                source: ${PWD}/flygon_config.toml
-                target: /flygon/config.toml
+                source: ${PWD}/Dragonite_config.toml
+                target: /Dragonite/config.toml
           # Optional volumes if you want to have access to logs
           #  - type: bind
           #      source: ${PWD}/logs
-          #      target: /flygon/logs
+          #      target: /Dragonite/logs
           ports:
             - "9002:9002" # change left one for external port
           # Optional: Might be required if your database is also hosted in docker
@@ -60,15 +60,15 @@ import { Callout } from 'nextra-theme-docs'
           #extra_hosts:
           #  - "host.docker.internal:host-gateway"
       admin:
-          image: ghcr.io/unownhash/flygon-admin:main
+          image: ghcr.io/unownhash/Dragonite-admin:main
           container_name: admin
           restart: unless-stopped
           environment:
             ADMIN_GENERAL_USERNAME: admin
             ADMIN_GENERAL_PASSWORD: password
 
-            ADMIN_FLYGON_API_ENDPOINT: http://flygon:9002
-            ADMIN_FLYGON_API_SECRET: secret
+            ADMIN_DRAGONITE_API_ENDPOINT: http://dragonite:9002
+            ADMIN_DRAGONITE_API_SECRET: secret
 
             ADMIN_GOLBAT_API_ENDPOINT: http://golbat:9001
             ADMIN_GOLBAT_API_SECRET: secret
@@ -90,10 +90,10 @@ import { Callout } from 'nextra-theme-docs'
     </Callout>
 
 
-1. Download Flygon config file
+1. Download Dragonite config file
 
     ```sh
-    wget -O flygon_config.toml https://raw.githubusercontent.com/UnownHash/Flygon/main/config.toml.example
+    wget -O Dragonite_config.toml https://raw.githubusercontent.com/UnownHash/Dragonite/main/config.toml.example
     ```
 
 1. Download Golbat config file
@@ -108,7 +108,7 @@ import { Callout } from 'nextra-theme-docs'
 
     > **Note**: this doesn't cover 100% of the configuration just the basics to get you started. We **highly recommend** setting a `raw_bearer` secret if these services are accessible from the public internet.
 
-    ```toml filename="flygon_config.toml" {2,4,7-11}
+    ```toml filename="Dragonite_config.toml" {2,4,7-11}
     [processors]
     golbat_endpoint = "http://golbat:9001"
     golbat_raw_bearer = ""
@@ -119,7 +119,7 @@ import { Callout } from 'nextra-theme-docs'
     port = 3306
     user = ""
     password = ""
-    name = "flygon"
+    name = "Dragonite"
     ```
 
     ```toml filename="golbat_config.toml" {1, 4-7}
@@ -135,15 +135,15 @@ import { Callout } from 'nextra-theme-docs'
     ```yml filename="docker-compose.yml" {7,8,11,14}
     ...
     admin:
-        image: ghcr.io/unownhash/flygon-admin:main
+        image: ghcr.io/unownhash/Dragonite-admin:main
         container_name: admin
         restart: unless-stopped
         environment:
         ADMIN_GENERAL_USERNAME: admin
         ADMIN_GENERAL_PASSWORD: password
 
-        ADMIN_FLYGON_API_ENDPOINT: http://flygon:9002
-        ADMIN_FLYGON_API_SECRET: secret
+        ADMIN_Dragonite_API_ENDPOINT: http://Dragonite:9002
+        ADMIN_Dragonite_API_SECRET: secret
 
         ADMIN_GOLBAT_API_ENDPOINT: http://golbat:9001
         ADMIN_GOLBAT_API_SECRET: secret
