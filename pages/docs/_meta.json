@@ -1,18 +1,20 @@
 {
   "index": "Introduction",
   "setup": "Getting Started",
-  "golbat": "Golbat",
-  "flygon": "Flygon",
-  "--": {
+  "Core Services": {
     "type": "separator",
-    "title": ""
+    "title": "Core Services"
+  },
+  "golbat": "Golbat",
+  "dragonite": "Dragonite",
+  "rotom": "Rotom",
+  "--": {
+    "type": "separator"
   },
   "help": "Getting Help",
   "contributing": "Contributing",
   "---": {
-    "type": "separator",
-    "title": ""
+    "type": "separator"
   },
-  "blissey": "Blissey",
   "other": "Other"
 }
