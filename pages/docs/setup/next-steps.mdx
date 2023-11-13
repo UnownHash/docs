@@ -10,6 +10,18 @@ This guide walks you through what to do after you have completed the Docker or S
 1. Switch to the **Accounts** tab in the sidebar
 1. From this page you can insert a single PTC account or batch import multiple accounts at once
 
+## Configure Proxies
+
+Proxies are required if you have more than one or two devices. The positive is you don't have to configure a third party service like HAproxy or Squid to get started. Just
+
+1. Login to your Dragonite Admin dashboard [http://SERVER_YOUR_IP:7273]() (by default).
+1. Switch to the **Proxies** tab in the sidebar
+1. Add a few http proxies in the following example format. If you have authentication for your proxy use the following
+
+    ```sh
+    http://USERNAME:PASSWORD@SERVER_IP_OR_HOSTNAME:PORT
+    ```
+
 ## Configure Koji
 
 I know you want me to go setup _yet another_ thing but this is important as Koji helps you visualize and create routes. This will save time down the road. Go check out the [Koji Docs](https://koji.vercel.app).
