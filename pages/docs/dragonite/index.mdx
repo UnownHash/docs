@@ -6,6 +6,28 @@ Dragonite is **closed source** software. We are releasing compiled binaries to t
 
 [**Dragonite-Admin**](https://github.com/UnownHash/Dragonite-Public) is a web front end to interact with Dragonite. Generally speaking Dragonite Admin is a proxy service to allow Admin users to interact with backend Dragonite server. With this service you can configure your Areas, Accounts, Routes and schedules.
 
+## Features
+
+1. Pokemon mode with shared encounter cache - only one worker will encounter a pokemon; including lure encounters and knowledge of weather changes
+1. Automatic gathering of fort names
+1. Automatic fetching of lure time remaining
+1. Gathering of showcase data
+1. Automatic switching to quest scan, timezone aware
+1. Auto quest scan when it detects quests have changed (eg for an event)
+1. Wide area raid scanner, with priority jumping for egg hatches
+1. "Scout" support for scan on demand from reactmap
+1. Dynamic scaling of route splits in an area when devices drop out
+1. Low CPU usage
+1. Defaults to keep your accounts safe
+1. Rotate on jail or pause on jail
+1. Built in proxy support (ie it calls the login through the proxy for you no need for haproxy/squid)
+1. Koji integration for hands free route creation
+1. Built in level mode that is fast
+1. Highly scalable, can run 1000+ workers in a single installation
+1. grpc raw send to golbat, can send raws to multiple destinations (including RDM)
+1. Built in prometheus stats, and raw stats table for detailed performance measurements
+1. API support for modifying settings; and a beautiful admin tool
+
 ## Supported MITM clients
 
 - [Exeggcute/GC](https://jorgschulze73.github.io/gc-docs/) (iOS and Android)

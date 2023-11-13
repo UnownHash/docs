@@ -9,12 +9,14 @@
   "dragonite": "Dragonite",
   "rotom": "Rotom",
   "--": {
-    "type": "separator"
+    "type": "separator",
+    "title": ""
   },
   "help": "Getting Help",
   "contributing": "Contributing",
   "---": {
-    "type": "separator"
+    "type": "separator",
+    "title": ""
   },
   "other": "Other"
 }
