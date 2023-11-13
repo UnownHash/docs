@@ -2,12 +2,6 @@ import { Callout } from 'nextra-theme-docs'
 
 # Docker Setup
 
-<Callout type="warning" emoji="⚠️">
-  Flygon is not public yet!
-
-  If you wish to continue the setup process make sure to comment out or delete the Flygon service. The [Hybrid Setup](/docs/other/hybrid-setup) will allow you to continue using RealDeviceMap (RDM) to control your devices while sending data to Golbat for processing.
-</Callout>
-
 ## Prerequisites
 
 - [Docker](https://docs.docker.com/engine/install/)
@@ -20,65 +14,86 @@ import { Callout } from 'nextra-theme-docs'
     ```yml filename="docker-compose.yml"
     version: "3.7"
     services:
-      flygon:
-          image: ghcr.io/unownhash/flygon:main
-          container_name: flygon
-          restart: unless-stopped
-          volumes:
-            - type: bind
-                source: ${PWD}/flygon_config.toml
-                target: /flygon/config.toml
-          # Optional volumes if you want to have access to logs
-          #  - type: bind
-          #      source: ${PWD}/logs
-          #      target: /flygon/logs
-          ports:
-            - "9002:9002" # change left one for external port
-          # Optional: Might be required if your database is also hosted in docker
-          #network_mode: "host"
-          #extra_hosts:
-          #  - "host.docker.internal:host-gateway"
+      dragonite:
+        image: ghcr.io/unownhash/dragonite-public:latest
+        container_name: dragonite
+        restart: unless-stopped
+        volumes:
+          - type: bind
+            source: ./dragonite_config.toml
+            target: /dragonite/config.toml
+          # Optional volume if you want to have access to logs
+          # - type: bind
+          #   source: ${PWD}/logs
+          #  target: /dragonite/logs
+        ports:
+          - "7272:7272" # change left one for external port
+        # Optional: Might be required if your database is also hosted in docker
+        #network_mode: "host"
+        #extra_hosts:
+        #  - "host.docker.internal:host-gateway"
+      admin:
+        image: ghcr.io/unownhash/dragonite-public-admin:latest
+        container_name: admin
+        restart: unless-stopped
+        environment:
+          ADMIN_GENERAL_HOST: 0.0.0.0
+          ADMIN_GENERAL_USERNAME: admin
+          ADMIN_GENERAL_PASSWORD: password
+          ADMIN_DRAGONITE_API_ENDPOINT: http://dragonite:7272
+          ADMIN_DRAGONITE_API_SECRET: secret
+          ADMIN_GOLBAT_API_ENDPOINT: http://golbat:9001
+          ADMIN_GOLBAT_API_SECRET: golbat1234
+        ports:
+          #- '7273:7273' ## Currently broken. See https://github.com/UnownHash/Dragonite-Public/issues/7
+          - '7273:9003' ## Temp bandaid this will most likely change in the future
       golbat:
-          image: ghcr.io/unownhash/golbat:main
-          container_name: golbat
+        image: ghcr.io/unownhash/golbat:main
+        container_name: golbat
+        restart: unless-stopped
+        volumes:
+          - type: bind
+            source: ${PWD}/golbat_config.toml
+            target: /golbat/config.toml
+        # Optional volumes if you want to have access to logs and persist cache
+        #  - type: bind
+        #    source: ${PWD}/cache
+        #    target: /golbat/cache
+        #  - type: bind
+        #    source: ${PWD}/logs
+        #    target: /golbat/logs
+        ports:
+          - "9001:9001" # change left one for external port
+          - "50001:50001" # change left one for external port
+        # Optional: Might be required if your database is also hosted in docker
+        #network_mode: "host"
+        #extra_hosts:
+        #  - "host.docker.internal:host-gateway"
+      rotom:
+          image: ghcr.io/unownhash/rotom:main
+          container_name: rotom
           restart: unless-stopped
           volumes:
             - type: bind
-              source: ${PWD}/golbat_config.toml
-              target: /golbat/config.toml
+              source: ${PWD}/rotom_config.json
+              target: /rotom/config/local.json
           # Optional volumes if you want to have access to logs and persist cache
           #  - type: bind
-          #    source: ${PWD}/cache
-          #    target: /golbat/cache
-          #  - type: bind
           #    source: ${PWD}/logs
-          #    target: /golbat/logs
+          #    target: /rotom/logs
           ports:
-            - "9001:9001" # change left one for external port
-          # Optional: Might be required if your database is also hosted in docker
-          #network_mode: "host"
-          #extra_hosts:
-          #  - "host.docker.internal:host-gateway"
-      admin:
-          image: ghcr.io/unownhash/flygon-admin:main
-          container_name: admin
-          restart: unless-stopped
-          environment:
-            ADMIN_GENERAL_USERNAME: admin
-            ADMIN_GENERAL_PASSWORD: password
-
-            ADMIN_FLYGON_API_ENDPOINT: http://flygon:9002
-            ADMIN_FLYGON_API_SECRET: secret
-
-            ADMIN_GOLBAT_API_ENDPOINT: http://golbat:9001
-            ADMIN_GOLBAT_API_SECRET: secret
-          ports:
-            - "9003:9003" # change left one for external port
+            - "7070:7070" # change left one for external port
+            - "7071:7071" # change left one for external port
+            - "7072:7072" # change left one for external port
 
     networks:
       default:
         name: scanner
     ```
+
+    If you want your database managed by docker feel free to add it to the same `docker-compose.yml` file. Alteratively,
+    as long as both the database service and Unown# services are in the same docker network you will be able to seamlessly
+    connect services across multiple `docker-compose.yml` files.
 
     <Callout type="info" emoji="ℹ️">
         If you want logs and cache files outside of docker go ahead and create your directories now.
@@ -90,10 +105,10 @@ import { Callout } from 'nextra-theme-docs'
     </Callout>
 
 
-1. Download Flygon config file
+1. Download Dragonite config file
 
     ```sh
-    wget -O flygon_config.toml https://raw.githubusercontent.com/UnownHash/Flygon/main/config.toml.example
+    wget -O dragonite_config.toml https://raw.githubusercontent.com/UnownHash/Dragonite-Public/main/dragonite/config.toml.example
     ```
 
 1. Download Golbat config file
@@ -102,28 +117,44 @@ import { Callout } from 'nextra-theme-docs'
     wget -O golbat_config.toml https://raw.githubusercontent.com/UnownHash/Golbat/main/config.toml.example
     ```
 
-1. Modify your two config files and docker-compose files
+1. Download Rotom config file
+
+    ```sh
+    wget -O rotom_config.json https://raw.githubusercontent.com/UnownHash/Rotom/main/config/local.json.example
+    ```
+
+1. Modify your three config files and `docker-compose.yml` files
 
     Make sure to update the highlighted lines from our snippets into your config files.
 
     > **Note**: this doesn't cover 100% of the configuration just the basics to get you started. We **highly recommend** setting a `raw_bearer` secret if these services are accessible from the public internet.
 
-    ```toml filename="flygon_config.toml" {2,4,7-11}
+    Using Golbat's GRPC endpoint (default port 50001) is recommended over the raw endpoint (default 9001).
+
+    ```toml filename="dragonite_config.toml" {2,5,7,9,11-16}
+    [rotom]
+    endpoint = "ws://rotom:7071"
+
     [processors]
-    golbat_endpoint = "http://golbat:9001"
+    #golbat_endpoint = "http://golbat:9001"
     golbat_raw_bearer = ""
-    golbat_api_secret = ""
+    golbat_api_secret = "golbat1234"
+    # if this is present then dragonite will not send raws to the httpendpoint
+    golbat_grpc_endpoint = "golbat:50001"
 
     [db]
     host = "0.0.0.0"
     port = 3306
     user = ""
     password = ""
-    name = "flygon"
+    name = "dragonite"
     ```
 
-    ```toml filename="golbat_config.toml" {1, 4-7}
-    api_secret = "golbat"   # Golbat secret required on api calls (blank for none)
+    ```toml filename="golbat_config.toml" {2,4, 7-10}
+    port = 9001             # Listening port for golbat
+    grpc_port = 50001       # Listening port for grpc
+    raw_bearer = ""         # Raw bearer (password) required
+    api_secret = "golbat1234"   # Golbat secret required on api calls (blank for none)
 
     [database]
     user = ""
@@ -132,21 +163,28 @@ import { Callout } from 'nextra-theme-docs'
     db = ""
     ```
 
-    ```yml filename="docker-compose.yml" {7,8,11,14}
+
+    ```json filename="rotom_config.json" {3}
+    "client": {
+      "port": 7072,
+      "host": "0.0.0.0"
+    },
+    ```
+
+    ```yml filename="docker-compose.yml" {8,9,10,12,13}
     ...
     admin:
-        image: ghcr.io/unownhash/flygon-admin:main
+        image: ghcr.io/unownhash/dragonite-public-admin:latest
         container_name: admin
         restart: unless-stopped
         environment:
-        ADMIN_GENERAL_USERNAME: admin
-        ADMIN_GENERAL_PASSWORD: password
-
-        ADMIN_FLYGON_API_ENDPOINT: http://flygon:9002
-        ADMIN_FLYGON_API_SECRET: secret
-
-        ADMIN_GOLBAT_API_ENDPOINT: http://golbat:9001
-        ADMIN_GOLBAT_API_SECRET: secret
+          ADMIN_GENERAL_HOST: 0.0.0.0
+          ADMIN_GENERAL_USERNAME: admin
+          ADMIN_GENERAL_PASSWORD: password
+          ADMIN_DRAGONITE_API_ENDPOINT: http://dragonite:7272
+          ADMIN_DRAGONITE_API_SECRET: secret
+          ADMIN_GOLBAT_API_ENDPOINT: http://golbat:9001
+          ADMIN_GOLBAT_API_SECRET: golbat1234
         ...
     ```
 

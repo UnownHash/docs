@@ -1,28 +1,23 @@
-import { Callout } from "nextra-theme-docs";
-
 # Welcome to Unown#
 
-<Callout type="warning" emoji="⚠️">
-  We are still in the development stage; there might be bugs, and some features are **missing**.
-</Callout>
-
-We are a passionate group of developers working on a mapping project for Pokémon Go. While just getting started, we wanted to open things up to start getting feedback from the community!
+👋 We're a group dedicated to building the next-gen Pokemon Go mapping stack.
 
 ## Why did you make this?
 
-We wanted to try something new, and the early results have been promising. The current tools in this space have been around for a few years. As such, they are stable, but increasingly difficult to add new features. Unown# allows us to re-think legacy ideas, rebuild from the ground up, and build a better user experience for all involved.
+We wanted to try something new, and the early results were promising. The current tools in this space have been around for a few years. As such, they are stable, but increasingly difficult to add new features. Unown# allows us to re-think legacy ideas, rebuild from the ground up, and build a better user experience for all involved.
 
-## What is this?
+## Core services
 
-- **Golbat** - is our data processor. Its primary purpose is to listen for events, format them into something useful, store them in a database, and send webhooks to external services.
-- **Flygon** - is our device handler. Devices will contact this service to grab jobs, accounts, and routes.
-- **Flygon-Admin** - this is our web frontend to manage the Flygon service.
+- **Dragonite** - Is our backend controller for game specific tasks. It tells workers what to scan and when to do it.
+- **Dragonite-Admin** - This web frontend is your primary method for interacting with the Unown# stack.
+- **Golbat** - Is our data processor. Its primary purpose is to listen for events, format them into something useful for external tools, store them in a database, and send webhooks to external services.
+- **Rotom** - Is our device controller that receives communications from workers (devices) and distributes them to Dragonite.
 
 ## Features
 
-Each service is incredibly customizable and highly optimized. The services are written in the Go programming language, providing a great developer experience, excellent concurrency, great memory management, fast HTTP handling, and more. Additionally, our design uses micro-services which allows for significant flexibility. We have you covered if you need to split services between multiple servers.
+Each service is incredibly customizable and highly optimized. Many core services are written in Go, providing a great developer experience, excellent concurrency, great memory management, fast HTTP handling, and more. Additionally, our design uses micro-services which allows for significant flexibility. There are no issues if you need to split services between multiple servers.
 
-Some of our highlighted features:
+Some of highlighted features:
 
 - Advanced Ditto detection
 - Gym parsing
@@ -35,7 +30,6 @@ Some of our highlighted features:
 - Quest parsing
 - Routes parsing
 - Webhook processing
-- and more!
 
 ## Still interested?
 

@@ -2,20 +2,65 @@ import { Callout } from 'nextra-theme-docs'
 
 # Standard
 
-<Callout type="warning" emoji="⚠️">
-  Flygon is not public yet!
-
-  If you wish to continue the setup process you can skip the Flygon install, build, and run steps. The [Hybrid Setup](/docs/other/hybrid-setup) will allow you to continue using RealDeviceMap (RDM) to control your devices while sending data to Golbat for processing.
-</Callout>
-
 ## Prerequisites
 
-- [Go 1.20](https://go.dev/doc/install)
+- [Go 1.21](https://go.dev/doc/install)
 - [Node 18](https://nodejs.org/en/download)
-- [Yarn 1.22](https://classic.yarnpkg.com/lang/en/docs/install)
 - [Git](https://git-scm.com/downloads) _(`git` might be pre-installed)_
 - [PM2](https://pm2.io/docs/runtime/guide/installation/) `yarn global add pm2`
+- [jq](https://jqlang.github.io/jq/download/) `sudo apt-get install jq`
 - Compatible Database - See [Database Setup](/docs/other/database)
+
+## Install Dragonite
+
+<Callout type="info" emoji="ℹ️">
+  This setup guide is written for Linux. All referenced Dragonite binary files will have
+  the `-linux-amd64` suffix. Using a different platform like macOS (darwin) will
+  change the suffix. Windows builds are currently **not available** and we recommend
+  Windows users use Windows Subsystem for Linux (WSL) or docker.
+
+</Callout>
+
+1. Clone repo
+
+    ```sh
+    git clone https://github.com/UnownHash/Dragonite-Public.git Dragonite
+    ```
+
+1. Change into cloned repo
+
+    ```sh
+    cd Dragonite
+    ```
+
+1. Download latest release binaries
+
+    ```sh
+    ./run.sh
+    ```
+
+1. Create your `config.toml` files from the two included example files
+
+    ```sh
+    cp admin/config.toml.example admin/config.toml
+    cp dragonite/config.toml.example dragonite/config.toml
+    ```
+
+1. Modify your `dragonite/config.toml` file. Minimum requirement:
+
+    - `db.dragonite` settings
+    - `golbat_*` settings
+
+    > Additionally, we **highly recommend** setting a the `raw_bearer`, `api_secret` and `bearer_token` keys if this service is accessible from the public internet.
+
+1. Modify your `admin/config.toml` file. The defaults will work out of box but are **not secure**.
+
+1. To run the service
+
+    ```sh
+    cd admin && ./admin-linux-amd64
+    cd dragonite && ./dragonite-linux-amd64
+    ```
 
 ## Install Golbat
 
@@ -56,108 +101,80 @@ import { Callout } from 'nextra-theme-docs'
 
 </Callout>
 
-## Install Flygon
+## Install Rotom
 
 1. Clone repo
 
     ```sh
-    git clone https://github.com/UnownHash/Flygon.git
+    git clone https://github.com/UnownHash/Rotom.git
     ```
 
 1. Change into cloned repo
 
     ```sh
-    cd Flygon
+    cd Rotom
     ```
 
-1. Create `config.toml` from example file
+1. Create configuration file
 
     ```sh
-    cp config.toml.example config.toml
+    cp config/local.json.example config/local.json
     ```
 
-1. Modify your config file. Minimum requirement:
+1. Modify your configuration file at `config/local.json`
 
-    - database settings
-    - `golbat_*` settings
-    - switch `raw_endpoints = []` if you aren't sending to another location
+    Please note Rotom does not have any authentication for it's web client. It is recommended that you run this service on your internal network, behind a Firewall, or protected by a cloud based application layer.
 
-    > Additionally, we **highly recommend** setting a the `raw_bearer`, `api_secret` and `bearer_token` keys if this service is accessible from the public internet.
+    - The `client.port` might need to be updated to `0.0.0.0` depending on how you run your server.
+    - You can also modify the monitoring values however it is unclear if they are actually used by any MITM tools at this time.
 
-1. Build and run the service
+1. Install the dependencies
 
     ```sh
-    go run .
+    npm ci
     ```
 
-<Callout type="info" emoji="ℹ️">
-  To compile a static binary run (useful for the PM2 section later)
-
-  ```sh
-  go build
-  ```
-
-</Callout>
-
-## Install Flygon-Admin
-
-1. Clone repo
+1. Build the application
 
     ```sh
-    git clone https://github.com/UnownHash/Flygon-Admin.git
+    npm run build
     ```
 
-1. Change into cloned repo
+1. To run the service
 
     ```sh
-    cd Flygon-Admin
+    npm run start
     ```
 
-1. Create `config.toml` from example file
-
-    ```sh
-    cp config.toml.example config.toml
-    ```
-
-1. Modify your config file. Minimum requirement:
-
-    - `username`, `password`, and `api_secrets` settings
-
-1. Compile the client, server and run the service
-
-    ```sh
-    yarn install
-    yarn build
-    yarn start
-    ```
-
-<Callout type="info" emoji="ℹ️">
-    Skip `yarn start` if you plan to run Flygon-Admin in PM2
-</Callout>
-
+    By default you should be able to access the frontend via [http://serverIP:7072]()
 
 ## PM2
 
-All services are now setup but navigating to each folder and using `go run .` is not ideal for servers. Instead we will use `pm2` which will maintain the lifecycle of the service, restarting, and optionally starting it on server reboot (`pm2 startup`).
+All services are now setup but navigating to each folder and starting each service one at a time is not ideal. Instead we will use `pm2` which will maintain the lifecycle of the service, restarting, and optionally starting it on server reboot (`pm2 startup`).
 
 ### Standard Setup
 
 1. Navigate to each service folder and compile a static binary
 
     ```sh
+    cd /path/to/Dragonite/ && ./run.sh
     cd /path/to/Golbat && go build golbat
-    cd /path/to/Flygon && go build flygon
-    cd /path/to/Flygon-Admin/server && go build
+    cd /path/to/Rotom/ && npm ci && npm run build
     ```
 
 1. Run the following to start and save a service
 
    ```sh
-    pm2 start ./golbat --name golbat -o "/dev/null"
+    # Dragonite
+    pm2 start ./dragonite-linux-amd64 --name "dragonite" -o "/dev/null"
+    pm2 start ./admin-linux-amd64 --name "dragonite-admin" -o "/dev/null"
+    # Golbat
+    pm2 start ./golbat --name "golbat" -o "/dev/null"
+    # Rotom
+    pm2 start dist/packages/server/main.js --name "rotom"
+
     pm2 save
     ```
-
-    > Replace 'golbat' with 'flygon' or 'server' (for Flygon-Admin)
 
 ### Ecosystem File
 
@@ -166,18 +183,36 @@ Instead of creating each service individually we can use an [PM2 - Ecosystem Fil
 1. Navigate to each folder and compile a static binary
 
     ```sh
-    cd /path/to/Golbat && go build
-    cd /path/to/Flygon && go build
-    cd /path/to/Flygon-Admin/server && go build
+    cd /path/to/Dragonite/ && ./run.sh
+    cd /path/to/Golbat && go build golbat
+    cd /path/to/Rotom/ && npm ci && npm run build
     ```
 
 1. Create your config file
 
     Make sure to update your `cmd` paths and optionally modify the `max_memory_restart` setting.
 
-    ```js filename="ecosystem.config.js" {6,15,24}
+    ```js filename="ecosystem.config.js" {6,15,24,33}
     module.exports = {
       apps : [
+        {
+            name: 'dragonite',
+            script: 'dragonite-linux-amd64',
+            cwd: '/home/username/Dragonite/dragonite',
+            instances: 1,
+            autorestart: true,
+            log_date_format: "YYYY-MM-DD HH:mm",
+            max_memory_restart: '4G'
+        },
+        {
+            name: 'dragonite-admin',
+            script: 'admin-linux-amd64',
+            cwd: '/home/username/Dragonite/admin',
+            instances: 1,
+            autorestart: true,
+            log_date_format: "YYYY-MM-DD HH:mm",
+            max_memory_restart: '1G'
+        },
         {
             name: 'golbat',
             script: 'golbat',
@@ -188,23 +223,14 @@ Instead of creating each service individually we can use an [PM2 - Ecosystem Fil
             max_memory_restart: '4G'
         },
         {
-            name: 'flygon',
-            script: 'flygon',
-            cwd: '/home/username/Flygon/',
+            name: 'rotom',
+            script: 'dist/packages/server/main.js',
+            cwd: '/home/username/Rotom/',
             instances: 1,
             autorestart: true,
             log_date_format: "YYYY-MM-DD HH:mm",
             max_memory_restart: '4G'
         },
-        {
-            name: 'flygon-admin',
-            script: 'server',
-            cwd: '/home/username/Flygon-Admin/dist/server',
-            instances: 1,
-            autorestart: true,
-            log_date_format: "YYYY-MM-DD HH:mm",
-            max_memory_restart: '1G'
-        }
       ]
     }
     ```
@@ -218,16 +244,36 @@ Instead of creating each service individually we can use an [PM2 - Ecosystem Fil
 
 ## Updating
 
-### One project
+Since each service is an individual component it is possible to update just one. IE - no need to stop our data parser (Golbat) because the backend controller (Dragonite) has an update.
 
-Since each service is an individual component it is possible to update just one. IE - no need to stop our data parser (Golbat) because the device controller (Flygon) has an update.
+### Dragonite
 
-> Below example is for Flygon but Golbat & Flygon-Admin are the exact same. Just remember to build your client for Flygon-Admin!
-
-1. Change into that projects directory
+1. Change into Dragonite directory
 
     ```sh
-    cd Flygon
+    cd path/to/Dragonite
+    ```
+
+1. Pull latest binaries
+
+    ```sh
+    pm2 stop dragonite dragonite-admin
+    git pull
+    ./run.sh
+    ```
+
+1. Restart services
+
+    ```sh
+    pm2 restart dragonite dragonite-admin
+    ```
+
+### Golbat
+
+1. Change into Golbat directory
+
+    ```sh
+    cd path/to/Golbat
     ```
 
 1. Pull latest git changes and compile
@@ -236,9 +282,35 @@ Since each service is an individual component it is possible to update just one.
     git pull && go build
     ```
 
+1. Restart service
+
+    ```sh
+    pm2 restart golbat
+    ```
+
+### Rotom
+
+1. Change into Rotom directory
+
+    ```sh
+    cd path/to/Rotom
+    ```
+
+1. Pull latest git changes and compile
+
+    ```sh
+    git pull && npm ci && npm run build
+    ```
+
+1. Restart service
+
+    ```sh
+    pm2 restart rotom
+    ```
+
 ### All projects
 
-If you wish to update all components do not want to worry about forgetting a step you can use the following script. This will update all services at once.
+If you wish to update all components and do not want to worry about forgetting a step you can use the following script. This will update all services at once.
 
 Make sure to update the hightlighted path variable on line 2.
 
@@ -253,19 +325,18 @@ Make sure to update the hightlighted path variable on line 2.
     git pull
     go build golbat
 
-    echo "Updating Flygon"
-    cd "$START_DIR"/Flygon
-    git pull
-    go build flygon
-
-    echo "Updating Flygon-Admin"
-    cd "$START_DIR"/Flygon-Admin/
-    git pull
-    yarn install
-    yarn build
+    echo "Updating Dragonite"
+    pm2 stop dragonite dragonite-admin
+    cd "$START_DIR"/Dragonite
+    ./run.sh
+    
+    echo "Updating Rotom"
+    cd "$START_DIR"/Rotom
+    npm ci
+    npm run build
 
     cd ~
-    pm2 restart golbat flygon flygon-admin
+    pm2 restart golbat dragonite dragonite-admin rotom
 
     echo "All services have been updated"
     ```

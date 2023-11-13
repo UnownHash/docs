@@ -1,0 +1,9 @@
+# Rotom
+
+[**Rotom**](https://github.com/UnownHash/Dragonite-Public) is our device controller. When a device connects to Rotom it will be registered as 1 to many workers creating a pool of workers that can process events. How many workers are available is dependent on your MITM provider and the configuration you provide within your MITM tool. You can think of Rotom as a task scheduler, Rotom will pull jobs that need to be processed from Dragonite (backend controller) and will send those request to various workers depending on time, available capacity, and configuration.
+
+Rotom communicates via websockets to devices and over http requests to Dragonite. This communication strategy allows for a much faster feedback loop between the backend server and actual worker.
+
+## Supported MITM clients
+
+- [Exeggcute/GC](https://jorgschulze73.github.io/gc-docs/) (iOS and Android)

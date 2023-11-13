@@ -1,8 +1,13 @@
 {
   "index": "Introduction",
   "setup": "Getting Started",
+  "Core Services": {
+    "type": "separator",
+    "title": "Core Services"
+  },
   "golbat": "Golbat",
-  "flygon": "Flygon",
+  "dragonite": "Dragonite",
+  "rotom": "Rotom",
   "--": {
     "type": "separator",
     "title": ""

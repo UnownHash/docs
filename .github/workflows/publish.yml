@@ -1,21 +1,54 @@
+# https://github.com/jaoafa/jaoweb4/blob/2b337c1a15385454f2aa6f5c07f6af95d1d680f9/.github/workflows/publish.yml#L18
 on:
   push:
     branches:
       - main
   pull_request:
+    types:
+      - opened
+      - synchronize
+  # Triggers the workflow on pull request event, but only for pull request opened or pull request labeled with "🚢 deploy preview" (from forked repo)
+  # pull_request is not allowed to use secrets, so we use pull_request_target instead (in forked repos)
+  pull_request_target:
+    types:
+      - opened
+      # When a labeled '🚢 deploy preview' pull request from forked repo, it will be deploy to Cloudflare Pages
+      - labeled
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+
     permissions:
-      contents: read
+      # default contents: read & write (in forked repos, only read)
+      contents: write
+      # default deployments: read & write (in forked repos, only read)
       deployments: write
+      # default pull-requests: read & write (in forked repos, only read)
       pull-requests: write
     name: Publish to Cloudflare Pages
+
+    if: ${{
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false) ||
+      (github.event_name == 'pull_request_target' &&
+      github.event.action == 'labeled' &&
+      github.event.pull_request.head.repo.fork == true &&
+      contains(github.event.label.name, '🚢 deploy preview'))
+      }}
+
+    # Cancel previous runs that are not completed yet
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref }}
+      cancel-in-progress: true
+    timeout-minutes: 10
+
     steps:
       # https://github.com/cloudflare/pages-action/issues/16#issuecomment-1398478711
       - name: Comment deploy start
-        if: github.event_name != 'push'
+        if: ${{ github.event_name == 'pull_request' || github.event_name == 'pull_request_target' }}
         uses: mshick/add-pr-comment@v2
         with:
           message-id: cloudflare-deploy
@@ -30,13 +63,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set Node.js 16.x
+      - name: Setup Node.js 18.x
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: 18.x
 
       - run: yarn install --frozen-lockfile
-      - run: yarn export
+      - run: yarn build
 
       - name: Publish to Cloudflare Pages
         id: cloudflare
@@ -46,9 +79,10 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: 'unownhash'
           directory: out
+          wranglerVersion: '3'
 
       - name: Comment deploy url
-        if: github.event_name != 'push'
+        if: ${{ github.event_name == 'pull_request' || github.event_name == 'pull_request_target' }}
         uses: mshick/add-pr-comment@v2
         with:
           message-id: cloudflare-deploy
@@ -62,3 +96,45 @@ jobs:
             |<span aria-hidden="true">🔍</span> Latest deploy log | ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} |
             |<span aria-hidden="true">😎</span> Deploy Preview Url | [${{ steps.cloudflare.outputs.url }}](${{ steps.cloudflare.outputs.url }}) |
             |<span aria-hidden="true">🌳</span> Environment | ${{ steps.cloudflare.outputs.environment }} |
+
+      - name: Remove label
+        if: ${{ github.event_name == 'pull_request_target' && contains(github.event.label.name, '🚢 deploy preview') }}
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.removeLabel({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: ['🚢 deploy preview']
+            })
+
+  # Comment on PR from the fork
+  # comment:
+  #   name: Comment
+  #   runs-on: ubuntu-latest
+
+  #   # pull_request_target opened event from forked repo
+  #   if: ${{
+  #     github.event_name == 'pull_request_target' &&
+  #     github.event.action == 'opened' &&
+  #     github.event.pull_request.head.repo.fork == true
+  #     }}
+
+  #   steps:
+  #     - name: Create PR comment
+  #       run: |
+  #         cat << EOF > comment.md
+  #         # ⚠️ Deployment requires \`🚢 deploy preview\` label
+
+  #         This repository is a forked repository.
+  #         For security reasons, deployments from forked repositories do not occur automatically.
+
+  #         To request a deployment, add the \`🚢 deploy preview\` label to this pull request.
+  #         (Only some members can add labels)
+  #         EOF
+
+  #         gh pr comment ${{ github.event.number }} -R ${{ github.repository }} -F comment.md
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

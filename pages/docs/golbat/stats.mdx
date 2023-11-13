@@ -1,0 +1,25 @@
+import Image from 'next/image'
+
+# Statistics
+
+Golbat comes with basic database statistics built in. These tables are named with the `_stats` suffix. With these tables you can use raw SQL queries or hook into a third party visualization tool to visualize the data that Golbat is parsing.
+
+[Blissey](/docs/blissey) and our [Prometheus](https://github.com/UnownHash/Golbat/pull/100) integration can be used to get started on visualizing the data.
+
+<br/>
+
+<Image src="https://user-images.githubusercontent.com/52629375/265464011-c2bcee57-834c-4694-b201-fa7524a7a52a.jpg" alt="Performance demo" width={900} height={900} />
+
+## Built-in statistic tables
+
+| Table name         |
+|--------------------|
+| raid_stats         |
+| pokemon_stats      |
+| pokemon_iv_stats   |
+| pokemon_area_stats |
+| pokemon_hundo_stats|
+| pokemon_nundo_stats|
+| quest_stats        |
+| invasion_stats     |
+| pokemon_shiny_stats|

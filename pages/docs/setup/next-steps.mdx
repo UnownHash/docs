@@ -4,23 +4,41 @@ import { Callout } from 'nextra-theme-docs'
 
 This guide walks you through what to do after you have completed the Docker or Standard setup process. You have things running but now what?
 
-## Setup RDM Raw Reflection
+## Add some accounts
 
-The [Hybrid Setup](/docs/other/hybrid-setup) will allow you to continue using RealDeviceMap (RDM) to control your devices while sending data to Golbat for processing.
+1. Login to your Dragonite Admin dashboard [http://SERVER_YOUR_IP:7273]() (by default).
+1. Switch to the **Accounts** tab in the sidebar
+1. From this page you can insert a single PTC account or batch import multiple accounts at once
+
+## Configure Proxies
+
+Proxies are required if you have more than one or two devices. The positive is you don't have to configure a third party service like HAproxy or Squid to get started. Just
+
+1. Login to your Dragonite Admin dashboard [http://SERVER_YOUR_IP:7273]() (by default).
+1. Switch to the **Proxies** tab in the sidebar
+1. Add a few http proxies in the following example format. If you have authentication for your proxy use the following
+
+    ```sh
+    http://USERNAME:PASSWORD@SERVER_IP_OR_HOSTNAME:PORT
+    ```
 
 ## Configure Koji
 
 I know you want me to go setup _yet another_ thing but this is important as Koji helps you visualize and create routes. This will save time down the road. Go check out the [Koji Docs](https://koji.vercel.app).
 
-Now that you have configured the service go modify your **Golbat** and **Flygon** config files.
+Now that you have configured the service go modify your **Golbat** and **Dragonite** config files making sure to add your `koji_endpoint`.
 
-## Modify MITM client
+## Setup RDM Raw Reflection (Legacy)
+
+The [Hybrid Setup](/docs/other/hybrid-setup) will allow you to continue using RealDeviceMap (RDM) to control your devices while sending data to Golbat for processing.
+
+## Modify MITM client (Legacy)
 
 <Callout type="info" emoji="ℹ️">
   If you are using RDM Raw Mirroring you can skip this section.
 </Callout>
 
-Now that services are configured you need to configure devices to send data requests to the correct endpoint. Some MITM clients only allow one endpoint (Atlas) so Flygon can be used to receive all data and then forward the `/raw` data to Golbat.
+Now that services are configured you need to configure devices to send data requests to the correct endpoint. Some MITM clients only allow one endpoint (Atlas) so Dragonite can be used to receive all data and then forward the `/raw` data to Golbat.
 
-- If sending data to Flygon use `http://YOUR_IP:9002/` (assuming default port).
+- If sending data to Dragonite use `http://YOUR_IP:9002/` (assuming default port).
 - If sending data to Golbat you can use `http://YOUR_IP:9001/raw` (assuming default port).

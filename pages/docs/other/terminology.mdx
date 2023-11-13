@@ -1,0 +1,40 @@
+
+# Terminology
+
+This page includes definitions for most of the commonly used components used within the Unown# stack.
+
+##### Accounts
+
+Niantic Pokemon Trainer Club (PTC) accounts that can be used with the Pokemon Go application.
+
+##### Area
+
+Areas encapsulates a Geofence, Routes, and scheduled events. Koji can drastically speed up your ability to create and manage these as your Areas grow or change.
+
+##### numWiEnc (Golbat database table)
+
+Number of pokemon that initial scanned as wild, lateron encountered
+
+##### rpl (Golbat database table)
+
+Reporting length (period), stored for intervals 5, 15, 60, 1440 and 10080 minutes
+
+##### secWiEnc (Golbat database table)
+
+Sum of seconds between seen wild and encountered
+
+##### Proxies
+
+Proxies are used by workers in order to login to the PTC service. Generally as you scale up in operations and have more workers a proxy will be required.
+
+##### Level Mode
+
+This mode can be used to send workers on a pre-defined route in order to catch Pokemon and spin Pokestops. In turn accounts will gain experience and reach level 30. Once level 30 has been reached the worker will be re-assigned a new account to start leveling.
+
+##### Scout Mode
+
+This mode can be considered an On-Demand scan mode. Once workers are added to this pool end users can use a tool like [ReactMap](./other/third-party) to send workers to specific locations around the world. Useful to get data for rare pokemon or locations outside of regular scan regions.
+
+##### Worker
+
+Workers are added to a pool inside of Rotom which can be allocated by Dragonite to different Areas. Physical device creates 1-many workers which can then handle different scanning tasks.

@@ -1,44 +1,52 @@
 # Database
 
-To use the Unown# services, you will need a database server with two different databases configured. One for **Golbat** and one for **Flygon**.
+To use the Unown# services, you will need a database server with two different databases configured. One for **Golbat** and one for **Dragonite**.
 
 ## Supported
 
 - MariaDB 10.6 or higher (recommended)
 - MySQL 8 or higher
 
-Sample service with docker:
+1. Create a folder for storing your database files. This should ideally live on an fast and redundant SSD volume.
 
-```yml filename="docker-compose.yml"
-version: '3.7'
-services:
-  db:
-    image: mariadb:10.11
-    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default-authentication-plugin=mysql_native_password --binlog-expire-logs-seconds=86400
-    container_name: db
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: YourStrongRootPassw0rd!
-      MYSQL_DATABASE: _temp
-      MYSQL_USER: unownhash
-      MYSQL_PASSWORD: YourStrongPassw0rd!
-    ports:
-      - 3306:3306
-    volumes:
-      - data:/var/lib/mysql
-      #- /etc/localtime:/etc/localtime:ro
-volumes:
-  data:
-    driver: local
+1. Sample service with docker:
 
-networks:
-  default:
-    name: scanner
-```
+    ```yml filename="docker-compose.yml"
+    version: '3.7'
+    services:
+    db:
+        image: mariadb:10.11
+        command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default-authentication-plugin=mysql_native_password --binlog-expire-logs-seconds=86400
+        container_name: db
+        restart: unless-stopped
+        environment:
+        MYSQL_ROOT_PASSWORD: YourStrongRootPassw0rd!
+        MYSQL_DATABASE: _temp
+        MYSQL_USER: unownhash
+        MYSQL_PASSWORD: YourStrongPassw0rd!
+        ports:
+        - 3306:3306
+        volumes:
+        - ./database:/var/lib/mysql
+        #- ./my.cnf:/etc/mysql/conf.d/my.cnf # Example below
+        #- /etc/localtime:/etc/localtime:ro
 
-Once the service is up, you will need to connect to the database service with [TablePlus](https://tableplus.com/), [Workbench](https://www.mysql.com/products/workbench/), Command Line, etc.
+    networks:
+    default:
+        name: scanner
+    ```
 
-1. Create a database for flygon
+1. Start the database
+
+    ```sh
+    docker compose up -d
+    ```
+
+## Setup
+
+Once the database service is running, you will need to connect to the database service with [TablePlus](https://tableplus.com/), [Workbench](https://www.mysql.com/products/workbench/), Command Line, etc. The default Encoding and Collation values should be fine for most configurations.
+
+1. Create a database for dragonite
 1. Create a database for golbat
 
 ## Optimizing MariaDB

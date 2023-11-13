@@ -7,6 +7,10 @@ const withNextra = require('nextra')({
 
 // nextjs config options
 let nextConfig = {
+  output: 'export',
+  experimental: {
+    webpackBuildWorker: true,
+  },
   images: {
     // Cloudflare Pages doesn't support optimized images
     unoptimized: true,
