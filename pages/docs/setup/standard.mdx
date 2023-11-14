@@ -242,6 +242,19 @@ Instead of creating each service individually we can use an [PM2 - Ecosystem Fil
     pm2 save
     ```
 
+### PM2 logs
+
+Overtime pm2 logs can take up large amounts of disk space. There is a popular pm2 module called `pm2-logrotate` that handles this log rotation for you. While it is optional we do **recommend** it.
+
+Basic setup below:
+
+```sh
+pm2 install pm2-logrotate
+pm2 set pm2-logrotate:max_size 50M
+pm2 set pm2-logrotate:retain 10
+pm2 set pm2-logrotate:compress true
+```
+
 ## Updating
 
 Since each service is an individual component it is possible to update just one. IE - no need to stop our data parser (Golbat) because the backend controller (Dragonite) has an update.
