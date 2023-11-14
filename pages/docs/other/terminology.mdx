@@ -35,6 +35,10 @@ This mode can be used to send workers on a pre-defined route in order to catch P
 
 This mode can be considered an On-Demand scan mode. Once workers are added to this pool end users can use a tool like [ReactMap](./other/third-party) to send workers to specific locations around the world. Useful to get data for rare pokemon or locations outside of regular scan regions.
 
+##### Websockets (`ws://`)
+
+Websockets are a standard communication protocol much like web traffic that occurs over port 80/443. Multiple Unown# services use websockets to allow for two way communication between client and server over a single TCP connection. If you visit an endpoint in your browser that is serving websocket traffic you will be greeted with a "Upgrade Required" message.
+
 ##### Worker
 
 Workers are added to a pool inside of Rotom which can be allocated by Dragonite to different Areas. Physical device creates 1-many workers which can then handle different scanning tasks.

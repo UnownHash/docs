@@ -17,17 +17,18 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+permissions:
+  # default contents: read & write (in forked repos, only read)
+  contents: write
+  # default deployments: read & write (in forked repos, only read)
+  deployments: write
+  # default pull-requests: read & write (in forked repos, only read)
+  pull-requests: write
+
 jobs:
   publish:
     runs-on: ubuntu-latest
 
-    permissions:
-      # default contents: read & write (in forked repos, only read)
-      contents: write
-      # default deployments: read & write (in forked repos, only read)
-      deployments: write
-      # default pull-requests: read & write (in forked repos, only read)
-      pull-requests: write
     name: Publish to Cloudflare Pages
 
     if: ${{
