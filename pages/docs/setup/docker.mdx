@@ -28,8 +28,8 @@ import { Callout } from 'nextra-theme-docs'
           #  target: /dragonite/logs
         ports:
           - "7272:7272" # change left one for external port
-        # Optional: Might be required if your database is also hosted in docker
-        #network_mode: "host"
+        # If you want to use a non docker database enable following lines and
+        # change the Database URL to 'host.docker.internal'
         #extra_hosts:
         #  - "host.docker.internal:host-gateway"
       admin:
@@ -65,8 +65,8 @@ import { Callout } from 'nextra-theme-docs'
         ports:
           - "9001:9001" # change left one for external port
           - "50001:50001" # change left one for external port
-        # Optional: Might be required if your database is also hosted in docker
-        #network_mode: "host"
+        # If you want to use a non docker database enable following lines and
+        # change the Database URL to 'host.docker.internal'
         #extra_hosts:
         #  - "host.docker.internal:host-gateway"
       rotom:
