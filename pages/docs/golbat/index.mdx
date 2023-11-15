@@ -1,6 +1,6 @@
 # Golbat
 
-[**Golbat**](https://github.com/UnownHash/Golbat) is our data processor. Its job is to accept HTTP or GRPC requests, format them into something useful, save them to your database, and optionally send webhooks to external services. We have optimized it over some with large instances processing many thousands of requests per second.
+[**Golbat**](https://github.com/UnownHash/Golbat) is our data processor. Its job is to accept HTTP or gRPC requests, format them into something useful, save them to your database, and optionally send webhooks to external services. Golbat has been thoroughly tested with large instances processing many thousands of requests per second.
 
 One of Golbat's best features is that pokemon encounters are stored in memory. This allows maps, like ReactMap, to connect to Golbat over an API allowing for a vastly improved experience over SQL queries. This also reduces server operations as your database will not constantly be filled full of short lived events that are deleted within a hour.
 

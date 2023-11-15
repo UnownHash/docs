@@ -1,38 +1,52 @@
 # Database
 
-To use the Unown# services, you will need a database server with two different databases configured. One for **Golbat** and one for **Dragonite**.
+To use Unown# services, you will need a database server with two different databases configured. One for **Golbat** and one for **Dragonite**. If you have an existing database feel free to continue using your existing service.
 
 ## Supported
 
 - MariaDB 10.6 or higher (recommended)
 - MySQL 8 or higher
 
+## Create a database
+
+Feel free to choose one of the following install methods. No matter your choice of Standard or Docker for hosting your database it is highly recommended that you create backups of your database.
+
+### Standard database setup
+
+Standard installation is thoroughly documented on external sites like [https://mariadb.org/](https://mariadb.org/) and [https://www.mysql.com/](https://www.mysql.com/). Please use one of those community guides for your specific platform.
+
+### Docker database setup
+
 1. Create a folder for storing your database files. This should ideally live on an fast and redundant SSD volume.
+
+    ```sh
+    mkdir database
+    ```
 
 1. Sample service with docker:
 
     ```yml filename="docker-compose.yml"
     version: '3.7'
     services:
-    db:
+      db:
         image: mariadb:10.11
         command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default-authentication-plugin=mysql_native_password --binlog-expire-logs-seconds=86400
         container_name: db
         restart: unless-stopped
         environment:
-        MYSQL_ROOT_PASSWORD: YourStrongRootPassw0rd!
-        MYSQL_DATABASE: _temp
-        MYSQL_USER: unownhash
-        MYSQL_PASSWORD: YourStrongPassw0rd!
+          MYSQL_ROOT_PASSWORD: YourStrongRootPassw0rd!
+          MYSQL_DATABASE: _temp
+          MYSQL_USER: unownhash
+          MYSQL_PASSWORD: YourStrongPassw0rd!
         ports:
-        - 3306:3306
+          - 3306:3306
         volumes:
-        - ./database:/var/lib/mysql
-        #- ./my.cnf:/etc/mysql/conf.d/my.cnf # Example below
-        #- /etc/localtime:/etc/localtime:ro
+          - ./database:/var/lib/mysql
+          #- ./my.cnf:/etc/mysql/conf.d/my.cnf # Example below
+          #- /etc/localtime:/etc/localtime:ro
 
     networks:
-    default:
+      default:
         name: scanner
     ```
 
@@ -42,7 +56,7 @@ To use the Unown# services, you will need a database server with two different d
     docker compose up -d
     ```
 
-## Setup
+## Create your database tables
 
 Once the database service is running, you will need to connect to the database service with [TablePlus](https://tableplus.com/), [Workbench](https://www.mysql.com/products/workbench/), Command Line, etc. The default Encoding and Collation values should be fine for most configurations.
 
@@ -57,15 +71,15 @@ These options can help you quite significantly with performance.
 # This should be 50% of RAM, leaving space for golbat
 innodb_buffer_pool_size = 64G
 
-# Log file size should certainly be >= 1GB, but on a big system, this is more appropriate
+# Log file size, should certainly be >= 1GB, but on a big system this is more appropriate
 innodb_log_file_size = 16G
 
-# This should be the number of cores
+# This should be number of cores
 innodb_read_io_threads = 10
 innodb_write_io_threads = 10
 innodb_purge_threads = 10
 
-# Some people recommend at least 1 per gb, so could be increased above
+# Some people receommend at least 1 per gb, so could be increased above
 innodb_buffer_pool_instances = 8
 
 # allow big sorts, in memory temp tables
@@ -85,4 +99,12 @@ innodb_io_capacity_max=2000
 
 # Trust disk system at the expense of recovery
 innodb_doublewrite = 0
+```
+
+These last two options prevent your ibdata1 file from growing continuously and space not being re-used. If you have this problem you can add these but be aware this requires recreation of ibdata.
+
+```yml filename="my.cnf"
+# Efficiently use ibdata
+innodb_undo_log_truncate = 1
+innodb_undo_tablespaces = 4
 ```
