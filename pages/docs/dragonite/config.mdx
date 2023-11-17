@@ -5,3 +5,88 @@ import { Callout } from 'nextra-theme-docs'
 <Callout type="info" emoji="🚧">
   This page is still under construction
 </Callout>
+
+
+## General section
+
+```toml
+[general]
+login_delay = 20 
+# seconds to sleep in-between PTC authing on one proxy
+
+# Whether raw worker stats are written
+stats = false
+
+# Host and Port used for the Dragonite API
+api_host = "127.0.0.1"
+api_port = 7272
+```
+
+## Koji section
+
+```toml
+[koji]
+url = "http://ip:port"
+bearer_token = "KOJI_SECRET"
+```
+
+## Prometheus section
+
+```toml
+#[prometheus]
+#enabled = true
+```
+
+## Tunning section
+
+```toml
+[tuning]
+dynamic_route_split = true
+#recycle_gmo_limit = 4900
+#recycle_encounter_limit = 9900
+#recycle_on_jail=false
+#minimum_account_reuse_hours = 169
+#location_delay = 0
+#fort_location_delay = 0
+```
+
+## Rotom section
+
+```toml
+[rotom]
+endpoint = "ws://127.0.0.1:7071"
+```
+
+## Logging section
+
+```toml
+[logging]
+save = true
+#debug = false
+#max_size = 500 # MB
+#max_age = 30 # days
+```
+
+## Processors section
+
+```toml
+[processors]
+# Golbat Endpoint is singular - and will configure an endpoint for raw sending and API
+golbat_endpoint = "http://127.0.0.1:9001"
+golbat_raw_bearer = ""
+golbat_api_secret = ""
+# if this is present then dragonite will not send raws to the httpendpoint
+#golbat_grpc_endpoint = "127.0.0.1:50001"
+```
+
+## Database section
+
+```toml
+[db.dragonite]
+host = "0.0.0.0"
+port = 3306
+user = ""
+password = ""
+name = "dragonite"
+pool_size = 1
+```
