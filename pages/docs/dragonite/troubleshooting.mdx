@@ -1,0 +1,27 @@
+import { Callout } from 'nextra-theme-docs'
+
+# Dragonite Troubleshooting
+
+<Callout type="info" emoji="🚧">
+  This page is still under construction
+</Callout>
+
+## Quests not scanning
+
+- Check your **Area** in Dragonite Admin. Make sure:
+
+    - A quest route is saved
+    - **Quest Mode** is Enabled
+    - **Quest Hours** has at least one number in the Array.
+
+     <Callout type="info" emoji="🚧">
+       Validate your Quest Hours are saved properly inside your database! [Issue #10](https://github.com/UnownHash/Dragonite-Public/issues/10)
+     </Callout>
+
+
+- Check your Dragonite Logs: `grep QUESTCHECK`
+
+## Koji route issues
+
+- Check your Dragonite Logs: `grep KOJI`
+- Check your Dragonite Logs: `grep CRON`
