@@ -3,24 +3,23 @@ import { Callout } from 'nextra-theme-docs'
 # Dragonite Configuration
 
 <Callout type="info" emoji="🚧">
-  This page is still under construction
+    This page is still under construction
 </Callout>
-
 
 ## General section
 
 ```toml
 [general]
-login_delay = 20 
-# seconds to sleep in-between PTC authing on one proxy
-
-# Whether raw worker stats are written
-stats = false
-
-# Host and Port used for the Dragonite API
-api_host = "127.0.0.1"
-api_port = 7272
+login_delay = 20
+...
 ```
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `login_delay` | 20 | Seconds to sleep in-between PTC authenticating with one proxy. For "unlimited" proxies we recommend setting this value to 1. |
+| `stats` | false | Whether raw worker stats are written to the Dragonite database. |
+| `api_host` | 127.0.0.1 | Host listener address for Dragonite API. |
+| `api_port` | 7272 | Host port address for Dragonite API. |
 
 ## Koji section
 
@@ -30,6 +29,11 @@ url = "http://ip:port"
 bearer_token = "KOJI_SECRET"
 ```
 
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `url` | "http://ip:port" | The URL for your Koji service. |
+| `bearer_token` | "KOJI_SECRET" | When Koji secret (`KOJI_SECRET`) configuration is enabled you must pass a secure token so Dragonite is able to communicate. |
+
 ## Prometheus section
 
 ```toml
@@ -37,25 +41,39 @@ bearer_token = "KOJI_SECRET"
 #enabled = true
 ```
 
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `enabled` | true | Uncomment and enable this value to turn on the prometheus endpoint within Dragonite. |
+
 ## Tunning section
 
 ```toml
 [tuning]
 dynamic_route_split = true
-#recycle_gmo_limit = 4900
-#recycle_encounter_limit = 9900
-#recycle_on_jail=false
-#minimum_account_reuse_hours = 169
-#location_delay = 0
-#fort_location_delay = 0
+...
 ```
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `dynamic_route_split` | true | When enabled Dragonite will update the route that workers are using as they connect or disconnect from an area. |
+| `recycle_gmo_limit` | 4900 | (Advanced) Recommend keeping this value commented out. When the GMO limit is reached for a specific account it will be be rotated. |
+| `recycle_encounter_limit` | 9900 | (Advanced) Recommend keeping this value commented out. When an account has encountered this amount of pokemon it will be rotated. |
+| `recycle_on_jail` | false | Enabling this setting will utilize significantly more accounts. Currently three accounts are assign to one worker and will rotate while the worker is running. |
+| `location_delay` | 0 | This value, in milliseconds, will add a slight wait period while a worker is moving to a new location. Adding a slight delay has proven to decrease empty GMO results and positively impact scans overall. Recommend starting with 100, 200, 300, etc and monitoring overall results. |
+| `fort_location_delay` | 0 | This value, in milliseconds, is the same as `location_delay` however it only impacts fort scans (gyms/pokestops). |
 
 ## Rotom section
 
 ```toml
 [rotom]
 endpoint = "ws://127.0.0.1:7071"
+#secret = ""
 ```
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `endpoint` | "ws://127.0.0.1:7071" | This is the URL for your Rotom service. |
+| `secret` | "" | When Rotom secret configuration is enabled you must pass a secure token so Dragonite is able to communicate. |
 
 ## Logging section
 
@@ -67,26 +85,43 @@ save = true
 #max_age = 30 # days
 ```
 
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `save` | true | When enabled Dragonite will write log files to disk. |
+| `debug` | false | When enabled Dragonite will write debug logging, which is very "chatty" and not required for general usage. |
+| `max_size` | 500 | Max size that Dragonite will allow log files to grow before being deleted. |
+| `debug` | 30 | Time that logs will live on disk in days before Dragonite deletes the log file. |
+
 ## Processors section
 
 ```toml
 [processors]
-# Golbat Endpoint is singular - and will configure an endpoint for raw sending and API
 golbat_endpoint = "http://127.0.0.1:9001"
 golbat_raw_bearer = ""
 golbat_api_secret = ""
-# if this is present then dragonite will not send raws to the httpendpoint
 #golbat_grpc_endpoint = "127.0.0.1:50001"
 ```
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `golbat_endpoint` | "http://127.0.0.1:9001" | Golbat (http) Endpoint is singular and will configure an endpoint for raw sending and API. |
+| `golbat_raw_bearer` | false | Golbat raw bearer value (empty string for none). |
+| `golbat_api_secret` | 500 | Golbat secret when making api calls (empty string for none). |
+| `golbat_grpc_endpoint` | 30 | When enabled dragonite will not send raws to the `golbat_endpoint` (http endpoint). |
 
 ## Database section
 
 ```toml
 [db.dragonite]
 host = "0.0.0.0"
-port = 3306
-user = ""
-password = ""
-name = "dragonite"
-pool_size = 1
+...
 ```
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `host` | "0.0.0.0" | Database host address. |
+| `port` | 3306 | Database port address. |
+| `user` | "" | Database username. |
+| `password` | "" | Database password. |
+| `name` | "dragonite" | Database table name. |
+| `pool_size` | 1 | Database pool size is used to control how many connections are made from Dragonite. |
