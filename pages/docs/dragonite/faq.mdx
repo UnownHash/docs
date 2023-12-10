@@ -1,0 +1,66 @@
+# Dragonite FAQ
+
+##### Q: How many accounts do I need?
+
+This depends heavily on your routes, scan location, configuration, network stability, MITM stability, etc. The only guidance we can give is having a weeks worth of accounts before reuse to satisfy the default tunning values. With game limitations this is a good starting point.
+
+##### Q: What settings does Dragonite use when creating a route?
+
+Dragonite sends requests to Koji to create routes. The default settings for each route type is listed below:
+
+**Pokemon**
+
+-   Mode: Cluster
+-   Category: Spawnpoint
+-   Radius: 70 (meters)
+-   Min Points: 3
+-   Cluster mode: Balanced
+
+**Pokemon (Bootstrap)**
+
+TBD
+
+**Fort**
+
+TBD
+
+**Fort Full**
+
+TBD
+
+##### Q: What logging options should I use?
+
+Docker, pm2, and Dragonite all have their own built-in logging options. While this is personal preference we do recommend you use Dragonite's logging and disable the others. Dragonite's logging will handle cleanup based on file size and length of time, we also compress these log files. Using tools like `zgrep`, `zless`, etc will allow you to read these compressed files.
+
+##### Q: How are POI names collected?
+
+Automatically of course! While a worker is scanning in any mode, except Level, we gather names and descriptions of Gyms and Pokestops.
+
+##### Q: Are lures accurate?
+
+Yes, instead of guessing that a lure will be 30 minutes we will open the Pokestop to gather the correct duration that a lure module is active, great for events that have long durations.
+
+##### Q: Can I see Gym Defenders?
+
+Dragonite will trigger this in game event but Golbat does not decode this proto.
+
+##### Q: How can I get in game route?
+
+Routes are collected when scanning for quests and during the Fort Mode.
+
+##### Q: How do Showcases work?
+
+We open Pokestops every 15mins to collect updated Showcase information. This response is stored in a global cache to make sure two workers don't request the same data.
+
+##### Q: What is fort mode?
+
+Fort mode is used for Pokestops and Gyms. Fort data is also collected during Pokemon routes however Fort mode can be used to optimize timings and allow extra flexibility for Unown# users. It's possible to scan a much larger area with Fort mode in a reasonable time while Pokemon routes handle smaller clusters.
+
+Fort mode uses 2 routes.
+
+-   Full route is basically bootstrap for whole fence, and a worker will run through the route once per day
+-   Route is optimized route, where workers will skip jumps without active POIs
+
+##### Q: I am seeing Empty GMOs in logs?
+
+Some amount of retry is expected. If a worker fails to get the expected data we will re-request the results. Tunable in the configuration section. It is possible that increasing your location delay might help, if you are seeing large amounts of retries in the logs.

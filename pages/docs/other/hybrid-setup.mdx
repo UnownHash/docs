@@ -3,34 +3,35 @@ import { Callout } from 'nextra-theme-docs'
 # Hybrid Setup
 
 <Callout type="warning" emoji="⚠️">
-  This temporary solution is only required if you are using a legacy client and RealDeviceMap (RDM).
+    This legacy solution is only required if you are using a legacy client and
+    RealDeviceMap (RDM).
 </Callout>
 
-There are two methods to send data to Golbat while continuing to use the device controller component from RealDeviceMap (RDM). This will allow you take advantage of Golbat's parsing.
+This will allow you take advantage of Golbat's parsing.
 
 ## Using RDM Raw Reflection
 
 As of RealDeviceMap (RDM) version 1.51.0 (July 11, 2023) you can use the built-in `raw forward` option. Some notes:
 
-- This only works with the json config option
-- Disabling `application.process.pokemon` and `application.process.incident` are optional however they will save on disk IO
-- When `application.process.pokemon` is disabled:
-  - "Pokemon IV" instances will not function
-  - RDM frontend will not display pokemon
+-   This only works with the json config option
+-   Disabling `application.process.pokemon` and `application.process.incident` are optional however they will save on disk IO
+-   When `application.process.pokemon` is disabled:
+    -   "Pokemon IV" instances will not function
+    -   RDM frontend will not display pokemon
 
 Example configuration:
 
 ```json
 {
-  "application": {
-    "rawForward": {
-      "url": "http://yourGolbat:9001/raw",
-      "bearer": "yourGolbatBearerSecret"
-    },
-    "process": {
-      "pokemon": false,
-      "incident": false
-    },
-  }
+    "application": {
+        "rawForward": {
+            "url": "http://yourGolbat:9001/raw",
+            "bearer": "yourGolbatBearerSecret"
+        },
+        "process": {
+            "pokemon": false,
+            "incident": false
+        }
+    }
 }
 ```
