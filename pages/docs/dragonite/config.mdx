@@ -10,13 +10,13 @@ import { Callout } from 'nextra-theme-docs'
 
 ```toml
 [general]
-login_delay = 20
+login_delay = 0
 ...
 ```
 
 | Key | Default | Description |
 | :-- | :-- | :-- |
-| `login_delay` | 20 | Seconds to sleep in-between PTC authenticating with one proxy. For "unlimited" proxies we recommend setting this value to 1. |
+| `login_delay` | 0 | Seconds to sleep in-between PTC authenticating with one proxy. For "unlimited" proxies we recommend setting this value to 1. |
 | `stats` | false | Whether raw worker stats are written to the Dragonite database. |
 | `api_host` | 127.0.0.1 | Host listener address for Dragonite API. |
 | `api_port` | 7272 | Host port address for Dragonite API. |
