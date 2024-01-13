@@ -10,13 +10,13 @@ import { Callout } from 'nextra-theme-docs'
 
 ```toml
 [general]
-login_delay = 20
+login_delay = 0  #As of now there is no known login limit, this might change in the future.
 ...
 ```
 
 | Key | Default | Description |
 | :-- | :-- | :-- |
-| `login_delay` | 20 | Seconds to sleep in-between PTC authenticating with one proxy. For "unlimited" proxies we recommend setting this value to 1. |
+| `login_delay` | 0 | Seconds to sleep in-between PTC authenticating with one proxy. For "unlimited" proxies we recommend setting this value to 0 or 1. |
 | `stats` | false | Whether raw worker stats are written to the Dragonite database. |
 | `api_host` | 127.0.0.1 | Host listener address for Dragonite API. |
 | `api_port` | 7272 | Host port address for Dragonite API. |
@@ -49,18 +49,22 @@ bearer_token = "KOJI_SECRET"
 
 ```toml
 [tuning]
-dynamic_route_split = true
-...
+#recycle_gmo_limit = 4900
+#recycle_encounter_limit = 9900
+#recycle_on_jail=false
+#minimum_account_reuse_hours = 169
+#location_delay = 0
+#fort_location_delay = 0
 ```
 
 | Key | Default | Description |
 | :-- | :-- | :-- |
-| `dynamic_route_split` | true | When enabled Dragonite will update the route that workers are using as they connect or disconnect from an area. |
 | `recycle_gmo_limit` | 4900 | (Advanced) Recommend keeping this value commented out. When the GMO limit is reached for a specific account it will be be rotated. |
 | `recycle_encounter_limit` | 9900 | (Advanced) Recommend keeping this value commented out. When an account has encountered this amount of pokemon it will be rotated. |
-| `recycle_on_jail` | false | Enabling this setting will utilize significantly more accounts. Currently three accounts are assign to one worker and will rotate while the worker is running. |
+| `recycle_on_jail` | false | Enabling this setting will utilize significantly more accounts. Currently five accounts are assigned to one worker and will rotate while the worker is running. |
 | `location_delay` | 0 | This value, in milliseconds, will add a slight wait period while a worker is moving to a new location. Adding a slight delay has proven to decrease empty GMO results and positively impact scans overall. Recommend starting with 100, 200, 300, etc and monitoring overall results. |
 | `fort_location_delay` | 0 | This value, in milliseconds, is the same as `location_delay` however it only impacts fort scans (gyms/pokestops). |
+| `minimum_account_reuse_hours` | 0 | This sets the amount of hours for accounts to "rest" until they can be reused. Recommended value is 169 hours (7 days). |
 
 ## Rotom section
 
@@ -113,13 +117,13 @@ golbat_api_secret = ""
 
 ```toml
 [db.dragonite]
-host = "0.0.0.0"
+host = "127.0.0.1"
 ...
 ```
 
 | Key | Default | Description |
 | :-- | :-- | :-- |
-| `host` | "0.0.0.0" | Database host address. |
+| `host` | "127.0.0.1" | Database host address. |
 | `port` | 3306 | Database port address. |
 | `user` | "" | Database username. |
 | `password` | "" | Database password. |

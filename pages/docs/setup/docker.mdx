@@ -4,7 +4,7 @@ import { Callout } from 'nextra-theme-docs'
 
 ## Prerequisites
 
-- [Docker](https://docs.docker.com/engine/install/) - If you are not familiar working with Docker see [Standard Setup](https://unownhash.com/docs/setup/standard)
+- [Docker](https://docs.docker.com/engine/install/) - If you are not familiar working with Docker see [Standard Setup](/docs/setup/standard)
 - Compatible Database - See [Database Setup](/docs/other/database)
 
 ## Install services with Docker
@@ -131,26 +131,26 @@ import { Callout } from 'nextra-theme-docs'
 
     Using Golbat's gRPC endpoint (default port 50001) is recommended over the raw endpoint (default 9001).
 
-    ```toml filename="dragonite_config.toml" {2,5,7,9,11-16}
+    ```toml filename="dragonite_config.toml" {2,5-7,9,11-16}
     [rotom]
     endpoint = "ws://rotom:7071"
 
     [processors]
-    #golbat_endpoint = "http://golbat:9001"
+    golbat_endpoint = "http://golbat:9001"
     golbat_raw_bearer = ""
     golbat_api_secret = "golbat1234"
-    # if this is present then dragonite will not send raws to the httpendpoint
+    # if this is present then dragonite will not send raws to the httpendpoint. You still need the regular endpoint for API calls.
     golbat_grpc_endpoint = "golbat:50001"
 
     [db]
-    host = "0.0.0.0"
+    host = "db" 
     port = 3306
     user = ""
     password = ""
     name = "dragonite"
     ```
 
-    ```toml filename="golbat_config.toml" {2,4, 7-10}
+    ```toml filename="golbat_config.toml" {1-4, 7-10}
     port = 9001             # Listening port for golbat
     grpc_port = 50001       # Listening port for grpc
     raw_bearer = ""         # Raw bearer (password) required
@@ -159,12 +159,21 @@ import { Callout } from 'nextra-theme-docs'
     [database]
     user = ""
     password = ""
-    address = "127.0.0.1:3306"
-    db = ""
+    address = "db:3306"
+    db = "golbat"
     ```
 
+    It is **highly recommended** setting a secret if Rotom is accessible from the public internet.
 
-    ```json filename="rotom_config.json" {3}
+    ```json filename="rotom_config.json"
+    "deviceListener": {
+      "port": 7070,
+      "secret": ""
+    },
+    "controllerListener":{
+      "port": 7071,
+      "secret": ""
+    },
     "client": {
       "port": 7072,
       "host": "0.0.0.0"
