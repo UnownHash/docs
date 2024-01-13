@@ -136,21 +136,21 @@ import { Callout } from 'nextra-theme-docs'
     endpoint = "ws://rotom:7071"
 
     [processors]
-    #golbat_endpoint = "http://golbat:9001"
+    golbat_endpoint = "http://golbat:9001"
     golbat_raw_bearer = ""
     golbat_api_secret = "golbat1234"
-    # if this is present then dragonite will not send raws to the httpendpoint
+    # if this is present then dragonite will not send raws to the httpendpoint. You still need the regular endpoint for API calls.
     golbat_grpc_endpoint = "golbat:50001"
 
     [db]
-    host = "0.0.0.0"
+    host = "127.0.0.1"
     port = 3306
     user = ""
     password = ""
     name = "dragonite"
     ```
 
-    ```toml filename="golbat_config.toml" {2,4, 7-10}
+    ```toml filename="golbat_config.toml" {1,2,4, 7-10}
     port = 9001             # Listening port for golbat
     grpc_port = 50001       # Listening port for grpc
     raw_bearer = ""         # Raw bearer (password) required
@@ -163,8 +163,17 @@ import { Callout } from 'nextra-theme-docs'
     db = ""
     ```
 
+    **Highly recommend** setting secret if Rotom is accessible from the public internet.
 
-    ```json filename="rotom_config.json" {3}
+    ```json filename="rotom_config.json"
+    "deviceListener": {
+      "port": 7070,
+      "secret": ""
+    },
+    "controllerListener":{
+      "port": 7071,
+      "secret": ""
+    },
     "client": {
       "port": 7072,
       "host": "0.0.0.0"
