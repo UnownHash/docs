@@ -68,6 +68,8 @@ Once the database service is running, you will need to connect to the database s
 These options can help you quite significantly with performance.
 
 ```yml filename="my.cnf"
+[mysqld]
+
 # This should be 50% of RAM, leaving space for golbat
 innodb_buffer_pool_size = 64G
 
