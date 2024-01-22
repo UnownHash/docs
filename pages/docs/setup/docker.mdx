@@ -165,6 +165,7 @@ import { Callout } from 'nextra-theme-docs'
 
     It is **highly recommended** setting a secret if Rotom is accessible from the public internet.
 
+    Please also note Rotom does not have any authentication for it's web client. It is recommended that you run this service on your internal network, behind a Firewall, or protected by a cloud based application layer.
     ```json filename="rotom_config.json"
     "deviceListener": {
       "port": 7070,
