@@ -66,6 +66,19 @@ bearer_token = "KOJI_SECRET"
 | `fort_location_delay` | 0 | This value, in milliseconds, is the same as `location_delay` however it only impacts fort scans (gyms/pokestops). |
 | `minimum_account_reuse_hours` | 0 | This sets the amount of hours for accounts to "rest" until they can be reused. Recommended value is 169 hours (7 days). |
 
+## Accounts section
+
+```toml
+#[accounts]
+#required_level = 31
+#leveling_level = 31
+```
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `required_level` | 30 | Minimum account level required to be used for scanning/questing. This only accepts level 30-40. |
+| `leveling_level` | 30 | Maximum level an account should reach during the leveling process. This only accepts level 30-32. |
+
 ## Rotom section
 
 ```toml
