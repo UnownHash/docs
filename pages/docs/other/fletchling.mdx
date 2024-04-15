@@ -1,0 +1,30 @@
+import { Callout } from 'nextra-theme-docs'
+import { Tabs } from 'nextra/components'
+import Image from 'next/image'
+
+# Fletchling
+
+[**Fletchling**](https://github.com/UnownHash/Fletchling) is a Golbat webhook receiver that processes pokemon webhooks and computes nesting pokemon.
+
+## Features
+
+- Receives and processes pokemon on the fly via webhook from Golbat.
+- Uses global spawn data to not confuse event spawns (CD, Spotlight, etc) with nesting pokemon.
+- No reliance on external sites for event or current nesting mon data.
+- Tool for importing nests from overpass (fletchling-osm-importer).
+- API to pull stats, purge stats, reload config, etc.
+
+
+## Showcase
+
+Below are examples of the end result in different applications.
+
+<Tabs items={['ReactMap']}>
+  <Tabs.Tab>
+    <Image src="/images/reactmap-nests.png" alt="ReactMap Nests Demo" width={500} height={500} />
+  </Tabs.Tab>
+</Tabs>
+
+## Setup
+
+The setup process for Fletchling is documented in the project README on [GitHub](https://github.com/UnownHash/Fletchling).
