@@ -10,16 +10,50 @@ import { Callout } from 'nextra-theme-docs'
 
 ```toml
 [general]
-login_delay = 0  #As of now there is no known login limit, this might change in the future.
+stats = true  #Enabled by default to write worker stats.
 ...
 ```
 
 | Key | Default | Description |
 | :-- | :-- | :-- |
-| `login_delay` | 0 | Seconds to sleep in-between PTC authenticating with one proxy. For "unlimited" proxies we recommend setting this value to 0 or 1. |
-| `stats` | false | Whether raw worker stats are written to the Dragonite database. |
 | `api_host` | 127.0.0.1 | Host listener address for Dragonite API. |
 | `api_port` | 7272 | Host port address for Dragonite API. |
+| `stats` | true | Whether raw worker stats are written to the Dragonite database. |
+
+## Auth provider section
+
+Auth provider config sections look like `[auth.<provider>]` where <provider> can be ptc or nk. One or both may exist and be enabled. 
+At least one section does need to exist with an 'enable = true' entry. 
+Without this, the deprecated config locations under general and tuning will be used with both providers enabled.
+
+```toml
+[auth.ptc]
+# enable this provider (defaults to false)
+enable = true
+# The following 2 options allow control over whether a certain provider
+# should be used for leveling and/or scanning. Setting both to false allows
+# one to do background token work without yet logging into the game with them.
+# enable this provider for normal scanning
+# enable_scanning = true (defaults to true)
+# enable this provider for leveling
+# enable_leveling = true (defaults to true)
+
+# seconds to sleep in-between authing on one proxy
+# login_delay = 20 (defaults to 20 for both providers)
+
+# use swirlix/xilriws to remote auth PTC logins
+# remote_auth_url = 
+# background initer to collect tokens of accounts without using them - this is false by default
+# token_init_enabled = true
+# don't rely on remote auth and only use accounts with stored token - true by default
+# token_refresh_only = true
+```
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| token_refresh_concurrency | 10 | define concurrency for the token background refresher |
+| token_init_concurrency | 1 | define concurrency for the token background initer |
+| token_init_interval_seconds | PTC: 1, NK: 180 | define the interval to request tokens |
 
 ## Koji section
 
