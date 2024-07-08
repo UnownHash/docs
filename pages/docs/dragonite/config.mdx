@@ -10,6 +10,8 @@ import { Callout } from 'nextra-theme-docs'
 
 ```toml
 [general]
+api_host = 127.0.0.1
+api_port = 7272
 stats = true  #Enabled by default to write worker stats.
 ...
 ```
@@ -22,7 +24,7 @@ stats = true  #Enabled by default to write worker stats.
 
 ## Auth provider section
 
-Auth provider config sections look like `[auth.<provider>]` where <provider> can be ptc or nk. One or both may exist and be enabled. 
+Auth provider config sections look like `[auth.<provider>]` where `<provider>` can be ptc or nk. One or both may exist and be enabled. 
 At least one section does need to exist with an 'enable = true' entry. 
 Without this, the deprecated config locations under general and tuning will be used with both providers enabled.
 
