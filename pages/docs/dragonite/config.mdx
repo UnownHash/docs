@@ -11,8 +11,7 @@ import { Callout } from 'nextra-theme-docs'
 ```toml
 [general]
 api_host = 127.0.0.1
-api_port = 7272
-instance_name = production # used by admin to show in the instance selection 
+api_port = 7272 
 stats = true  #Enabled by default to write worker stats.
 ...
 ```
@@ -21,6 +20,7 @@ stats = true  #Enabled by default to write worker stats.
 | :-- | :-- | :-- |
 | `api_host` | 127.0.0.1 | Host listener address for Dragonite API. |
 | `api_port` | 7272 | Host port address for Dragonite API. |
+| instance_name | "" | Display name of the instance in the admin instance selection |
 | `stats` | true | Whether raw worker stats are written to the Dragonite database. |
 
 ## Auth provider section
