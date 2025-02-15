@@ -58,17 +58,18 @@ enable = false
 #token_refresh_only = true
 ```
 
-⚠ Additional config variables, but only put them if you know what you do ⚠
+⚠ Additional config variables 
+Do NOT change these unless you know what you are doing. ⚠
 | Key | Default | Description |
 | :-- | :-- | :-- |
 | token_refresh_concurrency | 10 | define concurrency for the token background refresher |
 | token_init_concurrency | 1 | define concurrency for the token background initer |
 | token_init_interval_seconds | PTC: 1, NK: 180 | define the interval to request tokens |
-| remote_auth_timeout_seconds | "" | define a timeout for remote auth requests |
+| remote_auth_timeout_seconds | 60 | define a timeout for remote auth requests |
 | remote_init_retry_delay_minutes | "" | define a delay for retrying remote auth requests |
-| token_init_start_delay_minutes | "" | define a delay for starting the token initer |
-| token_refresh_days | "" | define the days after which a token should be refreshed |
-| token_refresh_start_delay_minutes | "" | define a delay for starting the token refresher |
+| token_init_start_delay_minutes | 5 | define a delay for starting the token initer |
+| token_refresh_days | 28 | define the days after which a token should be refreshed |
+| token_refresh_start_delay_minutes | 5 | define a delay for starting the token refresher |
 | ip_ban_backoff_minutes | 15 | define how to long to backoff an IP |
 | remote_auth_secret | "" | define a secret for remote auth requests if needed |
 | token_valid_days | "" | define the days a token is valid |
@@ -120,12 +121,14 @@ bearer_token = "KOJI_SECRET"
 | `location_delay` | 0 | This value, in milliseconds, will add a slight wait period while a worker is moving to a new location. Adding a slight delay has proven to decrease empty GMO results and positively impact scans overall. Recommend starting with 100, 200, 300, etc and monitoring overall results. |
 | `fort_location_delay` | 0 | This value, in milliseconds, is the same as `location_delay` however it only impacts fort scans (gyms/pokestops). |
 | `minimum_account_reuse_hours` | 0 | This sets the amount of hours for accounts to "rest" until they can be reused. Recommended value is 169 hours (7 days). |
-| `scout_age_limit` | 30 | |
+| `scout_age_limit` | 30 | Configure age limit for scout queue entries |
 | `test_shadow_banned` | false | Automatically test accounts for being shadow banned and marked as banned in database. |
 | `quest_layer_swap` | true | This option for questing will hold on to AR Quests and try to move to 'ar only scans' over time. This may become default later (the current default is 'true' which means it will try and drop ar quests if you have them as required, unless your account is marked as ar banned). |
 
 ### Dynamic Location Delay
 Make location_delay(max) dynamic by tuning against initial_gmo_success_rate(percentage), limited by minimum_location_delay(min).
+This is applied per worker and resets to the max value(location_delay) after an account is rotated. Therefore this should not be used with recycle_on_jail set to true.
+Every 50 steps Dragonite checks the success rate of GMOs without retries and adjusts location delay accordingly.
 ```toml
 #Example
 location_delay = 7000
