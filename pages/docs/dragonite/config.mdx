@@ -50,6 +50,12 @@ enable = true
 # token_init_enabled = true
 # don't rely on remote auth and only use accounts with stored token - true by default
 # token_refresh_only = true
+
+[auth.nk]
+enable = false
+#login_delay = 20
+#token_init_enabled=true
+#token_refresh_only = true
 ```
 
 ⚠ Additional config variables, but only put them if you know what you do ⚠
@@ -115,19 +121,16 @@ bearer_token = "KOJI_SECRET"
 | `fort_location_delay` | 0 | This value, in milliseconds, is the same as `location_delay` however it only impacts fort scans (gyms/pokestops). |
 | `minimum_account_reuse_hours` | 0 | This sets the amount of hours for accounts to "rest" until they can be reused. Recommended value is 169 hours (7 days). |
 | `scout_age_limit` | 30 | |
+| `test_shadow_banned` | false | Automatically test accounts for being shadow banned and marked as banned in database. |
+| `quest_layer_swap` | true | This option for questing will hold on to AR Quests and try to move to 'ar only scans' over time. This may become default later (the current default is 'true' which means it will try and drop ar quests if you have them as required, unless your account is marked as ar banned). |
 
+### Dynamic Location Delay
+Make location_delay(max) dynamic by tuning against initial_gmo_success_rate(percentage), limited by minimum_location_delay(min).
 ```toml
-# Make location_delay(max) dynamic by tuning against initial_gmo_success_rate(percentage), limited by minimum_location_delay(min).
-initial_gmo_success_rate = 75
-minimum_location_delay = 4000
-
-# Introduced in 1.10.9 Testing. Automatically test accounts for being shadow banned and marked as banned in database.
-test_shadow_banned=true
-
-# Introduced in Dragonite 1.12.3-testing
-# This option for questing will hold on to AR Quests and try to move to 'ar only scans' over time.
-# This may become default later (the current default is 'true' which means it will try and drop ar quests if you have them as required, unless your account is marked as ar banned)
-quest_layer_swap = false
+#Example
+location_delay = 7000
+initial_gmo_success_rate = 80
+minimum_location_delay = 3000
 ```
 
 ## Accounts section
