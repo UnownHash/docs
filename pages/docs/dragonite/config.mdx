@@ -59,7 +59,9 @@ enable = false
 ```
 
 ⚠ Additional config variables.
-Do **NOT** change these unless you really know what you are doing! ⚠
+Do **NOT** change these unless you **REALLY** know what you are doing! ⚠
+
+Dragonite has sensible defaults for these options and changing them can lead to unexpected behavior!
 | Key | Default | Description |
 | :-- | :-- | :-- |
 | `token_refresh_concurrency` | 10 | define concurrency for the token background refresher |
@@ -69,7 +71,7 @@ Do **NOT** change these unless you really know what you are doing! ⚠
 | `remote_auth_timeout_seconds` | 60 | define a timeout for remote auth requests |
 | `remote_init_retry_delay_minutes` |  | define a delay for retrying remote auth requests |
 | `remote_auth_secret` | "" | define a secret for remote auth requests if needed |
-| `token_refresh_days` | 28 | define the days after which a token should be refreshed |
+| `token_refresh_days` | PTC: 28, NK: 12 | define the days after which a token should be refreshed |
 | `token_refresh_start_delay_minutes` | 5 | define a delay for starting the token refresher |
 | `ip_ban_backoff_minutes` | 15 | define how to long to backoff an IP |
 | `token_valid_days` |  | define the days a token is valid |
