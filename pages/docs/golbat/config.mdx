@@ -73,15 +73,59 @@ include_hundos_under_cap = false
 
 **⭐ Advanced Option ⭐**
 
-With Scan Rules you can modify the behavior globally for all areas or for specific areas using
+With Scan Rules you can modify the behavior globally for all areas, for specific areas or specific scanner 'modes'.
+These will be processed in order, first match applies - and allows disabling of processing certain types of game objects.
 
+A global scan rule example:
 ```toml
 [[scan_rules]]
 wild_pokemon = false   # disables Pokémon without iv from the gmo (waits for encounter)
 nearby_pokemon = false # disables cell/pokestop Pokémon
-
-# insert example for a specific area
 ```
+
+Here the main area would not process nearby pokemon. Messages arriving in 'scout' mode would have everything processed; and the default would not process any pokemon (so outside main area not delivered by the scout service)
+```toml
+[[scan_rules]]
+areas = ["MainArea"]
+nearby_pokemon = false
+
+[[scan_rules]]
+context = ["Scout"]
+
+[[scan_rules]]
+pokemon = false
+```
+
+Example with the use of *context* for various scanner 'modes':
+```toml
+[[scan_rules]]
+context = ["Quest"]
+
+[[scan_rules]]
+context = ["Fort"]
+pokemon = false
+nearby_pokemon = false
+wild_pokemon = false
+
+[[scan_rules]]
+context = ["Invasion"]
+pokemon = false
+nearby_pokemon = false
+wild_pokemon = false
+
+[[scan_rules]]
+context = ["Pokemon"]
+nearby_pokemon = false
+```
+| Key | Description |
+| :-- | :-- |
+| `pokemon` | any pokemon processing (also disables spawnpoints) |
+| `wild_pokemon` | process wild pokemon from GMO |
+| `nearby_pokemon` |  process nearby pokemon from GMO |
+| `weather` | process weather in GMO |
+| `gyms` | process gyms in GMO |
+| `pokestop` | process pokestops in GMO |
+| `cells` | process cell updates (disabling this also disables automatic fort clearance) |
 
 ## Sentry Section
 
