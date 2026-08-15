@@ -1,10 +1,32 @@
-# Rotom
+import { Callout } from 'nextra-theme-docs'
 
-[**Rotom**](https://github.com/UnownHash/Rotom/) is our device controller. When a MITM client connects to Rotom it will be registered as a device. Devices can register 1 to many workers. A 1 to 1 relationship of device to worker is also completely valid. The connected devices create a pool of workers that can process events. How many workers are available is dependent on your MITM provider, your device constraints and the configuration you provide within your MITM tool.
+# RotomNG
 
-You can think of Rotom as a task scheduler, Rotom will pull jobs that need to be processed from Dragonite (backend controller) and will send those request to various workers depending on time, available capacity, and configuration.
+[**RotomNG**](https://github.com/UnownHash/RotomNG/) is our device controller. When a MITM client connects to RotomNG it will be registered as a device. Devices can register 1 to many workers. A 1 to 1 relationship of device to worker is also completely valid. The connected devices create a pool of workers that can process events. How many workers are available is dependent on your MITM provider, your device constraints and the configuration you provide within your MITM tool.
 
-Rotom communicates via websockets (`ws://`) to devices and Dragonite. This communication strategy allows for a smarter feedback loop between the backend server and actual worker.
+You can think of RotomNG as a task scheduler, RotomNG will pull jobs that need to be processed from Dragonite (backend controller) and will send those request to various workers depending on time, available capacity, and configuration.
+
+RotomNG communicates via websockets (`ws://`) to devices and Dragonite. This communication strategy allows for a smarter feedback loop between the backend server and actual worker.
+
+<Callout type="info" emoji="ℹ️">
+  RotomNG replaces the original Node.js based Rotom (now referred to as "Rotom OG").
+  It is a drop-in replacement for devices and Dragonite &mdash; the websocket protocol and
+  the default ports are unchanged &mdash; but the config file format, the HTTP API and the
+  Prometheus metric names have changed. See [Migrating from Rotom OG](/docs/rotom/migration).
+</Callout>
+
+## Listeners
+
+RotomNG exposes three listeners, all of which can be changed in your config file:
+
+| Listener | Default | Purpose |
+| :-- | :-- | :-- |
+| Device | `:7070` | MITM devices and workers connect here |
+| Controller | `:7071` | Dragonite (and other controllers) connect here |
+| HTTP | `:7072` | REST API and the web UI |
+
+The web UI is served from the HTTP listener, so with the defaults it is available at
+[http://SERVER_YOUR_IP:7072]().
 
 ## Supported MITM clients
 
@@ -14,8 +36,9 @@ Rotom communicates via websockets (`ws://`) to devices and Dragonite. This commu
 -   [--=FurtiF™=-- Tools](https://discord.gg/wtNgst3W64) (Android)
 
 
-## How MITM clients communicate with Rotom?
+## How MITM clients communicate with RotomNG?
 
 This is for MITM developers!
 
 -   [RotomProtos](https://github.com/UnownHash/RotomProtos)
+-   [HTTP API reference](https://github.com/UnownHash/RotomNG/blob/main/docs/RotomNG-API.md)

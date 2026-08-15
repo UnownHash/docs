@@ -75,18 +75,21 @@ import { Callout } from 'nextra-theme-docs'
         # change the Database URL to 'host.docker.internal'
         #extra_hosts:
         #  - "host.docker.internal:host-gateway"
-      rotom:
-          image: ghcr.io/unownhash/rotom:main
-          container_name: rotom
+      rotom-ng:
+          image: ghcr.io/unownhash/rotomng/rotom-ng:main
+          container_name: rotom-ng
           restart: unless-stopped
           volumes:
             - type: bind
-              source: ${PWD}/rotom_config.json
-              target: /rotom/config/local.json
-          # Optional volumes if you want to have access to logs and persist cache
+              source: ${PWD}/rotom-ng.toml
+              target: /rotom-ng/configs/rotom-ng.toml
+          # Optional volumes if you want to have access to logs and use jobs
           #  - type: bind
           #    source: ${PWD}/logs
-          #    target: /rotom/logs
+          #    target: /rotom-ng/logs
+          #  - type: bind
+          #    source: ${PWD}/jobs
+          #    target: /rotom-ng/jobs
           ports:
             - "7070:7070" # change left one for external port
             - "7071:7071" # change left one for external port
@@ -123,10 +126,10 @@ import { Callout } from 'nextra-theme-docs'
     wget -O golbat_config.toml https://raw.githubusercontent.com/UnownHash/Golbat/main/config.toml.example
     ```
 
-1. Download Rotom config file
+1. Download RotomNG config file
 
     ```sh
-    wget -O rotom_config.json https://raw.githubusercontent.com/UnownHash/Rotom/main/config/local.json.example
+    wget -O rotom-ng.toml https://raw.githubusercontent.com/UnownHash/RotomNG/main/configs/rotom-ng.toml.example
     ```
 
 1. Modify your three config files and `docker-compose.yml` files
@@ -139,7 +142,7 @@ import { Callout } from 'nextra-theme-docs'
 
     ```toml filename="dragonite_config.toml" {2,5-7,9,11-16}
     [rotom]
-    endpoint = "ws://rotom:7071"
+    endpoint = "ws://rotom-ng:7071"
 
     [processors]
     golbat_endpoint = "http://golbat:9001"
@@ -169,22 +172,21 @@ import { Callout } from 'nextra-theme-docs'
     db = "golbat"
     ```
 
-    It is **highly recommended** setting a secret if Rotom is accessible from the public internet.
+    It is **highly recommended** setting a secret if RotomNG is accessible from the public internet.
 
-    Please also note Rotom does not have any authentication for it's web client. It is recommended that you run this service on your internal network, behind a Firewall, or protected by a cloud based application layer.
-    ```json filename="rotom_config.json"
-    "deviceListener": {
-      "port": 7070,
-      "secret": ""
-    },
-    "controllerListener":{
-      "port": 7071,
-      "secret": ""
-    },
-    "client": {
-      "port": 7072,
-      "host": "0.0.0.0"
-    },
+    Every section of the RotomNG config is optional and defaults to the values below, so you only need to add what you want to change. See the [RotomNG Configuration](/docs/rotom/config) page for all options.
+
+    ```toml filename="rotom-ng.toml"
+    [device_listener]
+    address = ":7070"
+    #secret = ""
+
+    [controller_listener]
+    address = ":7071"
+    #secret = ""
+
+    [http_listener]
+    address = ":7072"
     ```
 
     ```yml filename="docker-compose.yml" {8,9,10,12,13}

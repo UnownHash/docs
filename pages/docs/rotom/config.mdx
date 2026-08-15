@@ -1,7 +1,210 @@
 import { Callout } from 'nextra-theme-docs'
 
-# Rotom Configuration
+# RotomNG Configuration
 
-<Callout type="info" emoji="🚧">
-  This page is still under construction
+RotomNG is configured with a TOML file. By default the binary reads `configs/rotom-ng.toml`
+relative to the working directory. A different path can be passed as the first argument:
+
+```sh
+./rotom-ng /path/to/rotom-ng.toml
+```
+
+Start from the example file shipped with the repo:
+
+```sh
+cp configs/rotom-ng.toml.example configs/rotom-ng.toml
+```
+
+Every section is optional and has sensible defaults, so a working config can be as small as an
+empty file. The config can be reloaded without a restart via `PUT /api/config/reload` or the
+web UI.
+
+<Callout type="info" emoji="ℹ️">
+  Coming from the original Node.js Rotom? The `config/local.json` format is gone. Use the
+  conversion script in the RotomNG repo to translate your old config:
+
+```sh
+python3 configs/rotom-og-to-ng.py old-local.json configs/rotom-ng.toml
+```
+
+  See [Migrating from Rotom OG](/docs/rotom/migration) for the remaining differences.
 </Callout>
+
+## Device listener section
+
+Handles connections from MITM devices and their workers.
+
+```toml
+[device_listener]
+address = ":7070"
+#secret = ""
+#ping_interval = "30s"
+#pong_wait = "30s"
+```
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `address` | ":7070" | Listen address for device/worker websocket connections. |
+| `secret` | "" | Optional secret devices must send in the `X-Rotom-Secret` header. Blank disables authentication. |
+| `ping_interval` | "30s" | Interval between websocket pings used to enforce the read timeout. |
+| `pong_wait` | "30s" | Extra grace beyond `ping_interval` to receive a pong. The effective read timeout is `ping_interval` + `pong_wait`. |
+
+## Controller listener section
+
+Handles connections from Dragonite and any other controllers.
+
+```toml
+[controller_listener]
+address = ":7071"
+#secret = ""
+#ping_interval = "30s"
+#pong_wait = "30s"
+#registration_timeout = "1m"
+#data_timeout = "2m"
+```
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `address` | ":7071" | Listen address for controller websocket connections. This is what Dragonite's `rotom.endpoint` points at. |
+| `secret` | "" | Optional secret controllers must send in the `X-Rotom-Secret` header. Must match Dragonite's `rotom.secret`. |
+| `ping_interval` | "30s" | Interval between websocket pings used to enforce the read timeout. |
+| `pong_wait` | "30s" | Extra grace beyond `ping_interval` to receive a pong. |
+| `registration_timeout` | "1m" | Max time allowed for the controller registration handshake before falling back to the normal ping read timeout. |
+| `data_timeout` | "2m" | The controller connection is considered dead when no data message is received in this period, independent of ping/pong activity. Set to `"0s"` to disable. |
+
+## HTTP listener section
+
+Serves the REST API and the web UI.
+
+```toml
+[http_listener]
+address = ":7072"
+#secret = ""
+```
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `address` | ":7072" | Listen address for the API and web UI. |
+| `secret` | "" | Optional secret required in the `X-Rotom-Secret` header on all `/api` endpoints. Requests without it get `401 Unauthorized`. |
+
+## Rate limit section
+
+Controls how frequently a single device's workers can be selected. Disabled by default.
+
+```toml
+[rate_limit]
+enable = false
+max_selections = 10
+duration = "1m"
+```
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `enable` | false | Enable device selection rate limiting. |
+| `max_selections` | 0 | Maximum number of selections per `duration` for one device. |
+| `duration` | "0s" | Time window for rate limiting, e.g. "30s", "1m", "5m". |
+
+<Callout type="info" emoji="ℹ️">
+  Rate limiting is silently disabled if `max_selections` or `duration` is not a positive value.
+</Callout>
+
+## Jobs section
+
+Jobs are shell commands that can be executed on devices from the web UI or API. This is disabled
+by default, but can be enabled if your MITM supports it.
+
+```toml
+[jobs]
+enable = false
+path = "./jobs"
+```
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `enable` | false | Enable the jobs system. |
+| `path` | "./jobs" | Directory containing job definition files. |
+
+Job files are JSON, either a single object or an array of them:
+
+```json filename="jobs/whoami.json"
+{
+  "id": "whoami",
+  "description": "execute 'whoami'",
+  "exec": "whoami"
+}
+```
+
+Job definitions can be re-read from disk without a restart with the **Reload** button on the
+Jobs page (`PUT /api/job/-/reload`).
+
+## Logging section
+
+```toml
+[logging]
+level = "info"
+format = "plain"
+no_console_log = false
+
+[logging.file]
+#disable = false
+#path = "./logs/rotom-ng.log"
+#max_size_mb = 512
+#max_backups = 30
+#max_age_days = 30
+#compress = false
+#rotate_on_start = false
+```
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `level` | "info" | One of panic, fatal, error, warn, warning, info, debug, trace. |
+| `format` | "plain" | Log format: plain or json. |
+| `no_console_log` | false | Disable console logging and only write to the log file. |
+| `file.disable` | false | Disable file logging entirely. |
+| `file.path` | "./logs/rotom-ng.log" | Full path to the log file. |
+| `file.max_size_mb` | 0 | Size in MB before rotation. 0 means no limit. |
+| `file.max_backups` | 0 | Number of rotated files to keep. 0 keeps all. |
+| `file.max_age_days` | 0 | Days to keep rotated files. 0 means no age limit. |
+| `file.compress` | false | Compress rotated log files. |
+| `file.rotate_on_start` | false | Rotate the log file on startup. |
+
+## Prometheus section
+
+```toml
+[prometheus]
+enable = false
+#namespace = "rotom_ng"
+```
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `enable` | false | Expose metrics at `GET /api/metrics`. When disabled the endpoint returns `404`. |
+| `namespace` | "rotom_ng" | Prefix applied to all metric names. |
+
+See [Prometheus](/docs/other/prometheus) for scraping the rest of the stack.
+
+## Tuning section
+
+```toml
+[tuning]
+disable_worker_stats = false
+#profiling = false
+```
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `disable_worker_stats` | false | Slight speedup at the cost of losing worker request stats in Prometheus and the UI. |
+| `profiling` | false | Enable the Go pprof endpoints at `GET /api/debug/pprof/*`. |
+
+## Shutdown timeout
+
+A top level key, applying to the device, controller and HTTP listeners. Put it at the very top
+of the file, before any section header, or it will be parsed as part of the section above it.
+
+```toml
+shutdown_timeout = "5s"
+```
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `shutdown_timeout` | "5s" | How long to wait for connections to drain on shutdown. |
