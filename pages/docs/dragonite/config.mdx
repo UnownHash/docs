@@ -161,8 +161,8 @@ endpoint = "ws://127.0.0.1:7071"
 
 | Key | Default | Description |
 | :-- | :-- | :-- |
-| `endpoint` | "ws://127.0.0.1:7071" | This is the URL for your Rotom service. |
-| `secret` | "" | When Rotom secret configuration is enabled you must pass a secure token so Dragonite is able to communicate. |
+| `endpoint` | "ws://127.0.0.1:7071" | This is the URL for your [RotomNG](/docs/rotom) service. It must point at RotomNG's controller listener (`controller_listener.address`, default port 7071). |
+| `secret` | "" | When RotomNG's `controller_listener.secret` is set you must pass the same token here so Dragonite is able to communicate. |
 
 ## Logging section
 
