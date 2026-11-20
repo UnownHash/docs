@@ -48,7 +48,6 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      # https://github.com/cloudflare/pages-action/issues/16#issuecomment-1398478711
       - name: Comment deploy start
         if: ${{ github.event_name == 'pull_request' || github.event_name == 'pull_request_target' }}
         uses: mshick/add-pr-comment@v2
@@ -65,23 +64,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 18.x
+      - name: Setup Node.js 22.x
         uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: 22.x
 
       - run: yarn install --frozen-lockfile
       - run: yarn build
 
       - name: Publish to Cloudflare Pages
         id: cloudflare
-        uses: cloudflare/pages-action@v1
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: 'unownhash'
-          directory: out
-          wranglerVersion: '3'
+          command: pages deploy out --project-name=unownhash --branch=${{ github.head_ref || github.ref_name }}
 
       - name: Comment deploy url
         if: ${{ github.event_name == 'pull_request' || github.event_name == 'pull_request_target' }}
@@ -96,12 +93,12 @@ jobs:
             |---------------------------------|------------------------|
             |<span aria-hidden="true">🔨</span> Latest commit | ${{ github.sha }} |
             |<span aria-hidden="true">🔍</span> Latest deploy log | ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} |
-            |<span aria-hidden="true">😎</span> Deploy Preview Url | [${{ steps.cloudflare.outputs.url }}](${{ steps.cloudflare.outputs.url }}) |
-            |<span aria-hidden="true">🌳</span> Environment | ${{ steps.cloudflare.outputs.environment }} |
+            |<span aria-hidden="true">😎</span> Deploy Preview Url | [${{ steps.cloudflare.outputs.deployment-url }}](${{ steps.cloudflare.outputs.deployment-url }}) |
+            |<span aria-hidden="true">🌳</span> Environment | ${{ steps.cloudflare.outputs.pages-environment }} |
 
       - name: Remove label
         if: ${{ github.event_name == 'pull_request_target' && contains(github.event.label.name, '🚢 deploy preview') }}
-        uses: actions/github-script@v6
+        uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
