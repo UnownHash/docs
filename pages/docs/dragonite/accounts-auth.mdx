@@ -1,0 +1,60 @@
+import { Callout } from 'nextra-theme-docs'
+
+# Accounts & Auth
+
+## Accounts
+
+Dragonite stores accounts in its database. Add them in **Dragonite Admin → Accounts** (single accounts or CSV import) or through the [`/v2/accounts` API](/docs/dragonite/api#accounts).
+
+- Scanning needs accounts of at least level 31 (`accounts.required_level`, 31 to 40). Lower accounts are used by [Level mode](/docs/dragonite/modes#level).
+- Accounts are rotated after a number of requests (`tuning.recycle_*`) and rest for `tuning.minimum_account_reuse_hours` before they are used again. Plan for about a week's worth of accounts.
+- Accounts that are banned, suspended, disabled or have invalid credentials are taken out of rotation. Reset them in [Dragonite Admin](/docs/dragonite/admin) once fixed.
+
+## Login providers
+
+Each provider has its own `[auth.<provider>]` section in the [config](/docs/dragonite/config#auth-sections). Enable the ones you have accounts for.
+
+| Section | Provider |
+| :-- | :-- |
+| `[auth.ptc]` | Pokémon Trainer Club |
+| `[auth.nk]` | Niantic Kids |
+
+Set `enable_scanning` or `enable_leveling` to `false` to keep a provider's accounts out of scanning or leveling.
+
+## Tokens
+
+Logging in is the most sensitive step for an account, so Dragonite stores login tokens and reuses them.
+
+- **Token refresh** renews stored tokens in the background before they expire (`token_refresh_days`).
+- **Token init** (`token_init_enabled`) logs in accounts without a token in the background, one every `token_init_interval_seconds`, so they are ready when needed.
+- With `token_refresh_only = true` (default), workers only use accounts that already have a token and never log in themselves.
+
+### Remote auth
+
+PTC logins need a remote login service such as **Xilriws** or **Swirlix**. Set its address as `remote_auth_url` in `[auth.ptc]`.
+
+```toml
+[auth.ptc]
+enable = true
+remote_auth_url = "http://<xilriws-host>:<port>"
+token_init_enabled = true
+token_refresh_only = true
+```
+
+<Callout type="info">
+  Without `remote_auth_url`, Dragonite can't log in PTC accounts and can't collect refresh tokens for them, so only accounts that already have a token can be used. Dragonite then requires `token_init_enabled = false` and `token_refresh_only = true`.
+</Callout>
+
+## Quest quarantine
+
+Some accounts can't return reliable quest data, for example AR-banned accounts. With `tuning.quest_quarantine = true` (default):
+
+- Only **quest-capable** accounts quest: PTC accounts that are not known to be AR-banned. Niantic Kids accounts don't quest.
+- A worker switching to quest mode with a non-quest-capable account swaps to a quest-capable one, or skips questing if none is available.
+- Data from non-quest-capable accounts is marked so Golbat stores their quests as AR quests instead of overwriting the normal ones.
+
+Set `tuning.reserve_quest_accounts = true` to let Pokémon and Fort workers use non-quest-capable accounts first, so quest-capable accounts stay fresh for questing.
+
+## Teams
+
+New accounts join a random team when they first log in. Use `tuning.team_selection` to force `mystic`, `valor` or `instinct`, or `off` to leave accounts without a team.

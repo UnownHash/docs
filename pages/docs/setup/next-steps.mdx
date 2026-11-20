@@ -38,7 +38,4 @@ The [Hybrid Setup](/docs/other/hybrid-setup) will allow you to continue using Re
   If you are using RDM Raw Mirroring you can skip this section.
 </Callout>
 
-Now that services are configured you need to configure devices to send data requests to the correct endpoint. Some MITM clients only allow one endpoint (Atlas) so Dragonite can be used to receive all data and then forward the `/raw` data to Golbat.
-
-- If sending data to Dragonite use `http://YOUR_IP:9002/` (assuming default port).
-- If sending data to Golbat you can use `http://YOUR_IP:9001/raw` (assuming default port).
+Now that services are configured you need to configure devices that are not controlled by Dragonite to send their data to Golbat: `http://YOUR_IP:9001/raw` (assuming default port).

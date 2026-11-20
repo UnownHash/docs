@@ -1,0 +1,117 @@
+import { Callout } from 'nextra-theme-docs'
+
+# Dragonite API
+
+Dragonite has an HTTP API on `api_host:api_port` (default port 7272). [Dragonite Admin](/docs/dragonite/admin) uses it, and so can your own tools and scripts.
+
+Each Dragonite instance serves **interactive API docs at `/docs`** with the full request and response schemas for your version (OpenAPI document at `/openapi.json` and `/openapi.yaml`). This page is an overview.
+
+<Callout type="warning">
+  Keep the Dragonite API on `127.0.0.1` or a private network (`[general] api_host`), and never expose it to the internet. People use Dragonite Admin with its login. Scripts and tools go through Dragonite Admin as well: set `api_secret` in the admin config and send it in the `X-Dragonite-Admin-Secret` header.
+</Callout>
+
+Most actions accept `POST`. The `GET` variants of actions are kept for older tools.
+
+## Status
+
+| Method | Path | Description |
+| :-- | :-- | :-- |
+| GET | `/health` | Health check. |
+| GET | `/status` | Worker counts per area, active schedules, pools and queues. |
+| GET | `/status/quest-area/{area_id}` | Quest progress of an area. |
+| GET | `/config/` | Instance name, version and whether Koji is available. |
+
+## Control
+
+| Method | Path | Description |
+| :-- | :-- | :-- |
+| POST | `/reload` | Reload `config.toml`. |
+| POST | `/reload/accounts` | Reload accounts from the database. |
+| POST | `/reload/proxy` | Reload proxies from the database. |
+| POST | `/log-rotate` | Rotate log files. |
+| GET | `/global-rate-limit` | Global rate limit state. |
+| POST | `/global-rate-limit/pause`, `/global-rate-limit/reset` | Pause or reset the global rate limit. |
+
+## Areas
+
+| Method | Path | Description |
+| :-- | :-- | :-- |
+| GET, POST | `/v2/areas/` | List or create areas. |
+| GET, PATCH, DELETE | `/v2/areas/{area_id}` | Read, update or delete an area. |
+| POST | `/recalculate/{area_id}/pokemon`, `/fort`, `/quest` | Recalculate a route with Koji. |
+| POST | `/quest/{area_id}/start`, `/quest/{area_id}/stop` | Start or stop questing in an area. `?clear=false` keeps existing quests. |
+| POST | `/quest/all/start`, `/quest/all/stop` | Start or stop questing in all active areas. |
+
+The older `/areas/` endpoints still exist. `/v2/areas` additionally accepts GeoJSON geofences, including multipolygons, and per-mode geofences. See [Areas & Modes](/docs/dragonite/modes) for the area options.
+
+## Accounts
+
+| Method | Path | Description |
+| :-- | :-- | :-- |
+| GET, POST, DELETE | `/v2/accounts/` | List, create or delete accounts. |
+| POST | `/v2/accounts/bulk` | Import many accounts. |
+| GET, PATCH, DELETE | `/v2/accounts/{username}` | Read, update or delete one account. |
+| POST | `/v2/accounts/make-available`, `/v2/accounts/{username}/make-available` | Make accounts available now. |
+| POST | `/v2/accounts/clear-cooldown`, `/v2/accounts/{username}/clear-cooldown` | Clear cooldowns. |
+| POST | `/v2/accounts/reset-{banned,suspended,disabled,auth-banned,invalid}` (also per `{username}`) | Reset an account state. |
+| GET | `/accounts/stats`, `/accounts/level-stats` | Account totals by state and by level. |
+
+## Proxies
+
+| Method | Path | Description |
+| :-- | :-- | :-- |
+| GET, POST | `/proxies/` | List or add proxies. |
+| POST | `/proxies/bulk` | Add many proxies. |
+| GET, PATCH, DELETE | `/proxies/{proxy_id}` | Read, update or delete a proxy. |
+| GET | `/proxies/stats`, `/proxies/stats/{proxy_id}` | Proxy statistics. |
+
+## Global modes
+
+| Method | Path | Description |
+| :-- | :-- | :-- |
+| GET, POST, PATCH, DELETE | `/modes/level/`, `/modes/scout/`, `/modes/invasion/` | Configure the [global mode](/docs/dragonite/modes#global-modes) pools. |
+| GET | `/modes/level/stats`, `/modes/scout/stats` | Level and scout statistics. |
+| DELETE | `/modes/scout/clear`, `/modes/invasion/clear` | Clear the scout or invasion queue. |
+
+## Scout
+
+| Method | Path | Description |
+| :-- | :-- | :-- |
+| POST | `/scout/v2` | Queue scouts at one or more coordinates. |
+| GET | `/scout?lat=..&lon=..` | Queue a single scout. |
+| GET | `/scout/queue` | Number of queued scouts. |
+| DELETE | `/scout/clear` | Clear the scout queue. |
+
+## Rare Pokémon
+
+| Method | Path | Description |
+| :-- | :-- | :-- |
+| GET | `/rare-pokemon/queue`, `/rare-pokemon/queue/{area_id}` | Queued rare Pokémon. |
+| GET | `/rare-pokemon/rarity`, `/rare-pokemon/rarity/{area_id}` | Species rarity per area. |
+
+## Scheduler
+
+| Method | Path | Description |
+| :-- | :-- | :-- |
+| GET, POST | `/scheduler/schedules` | List or create schedules. |
+| GET, PUT, DELETE | `/scheduler/schedules/{id}` | Read, replace or delete a schedule. |
+| POST | `/scheduler/schedules/{id}/enable`, `/disable` | Enable or disable a schedule. |
+| GET, POST | `/scheduler/groups` | List or create groups. |
+| GET, PUT, DELETE | `/scheduler/groups/{id}` | Read, replace or delete a group. |
+| POST, DELETE | `/scheduler/groups/{id}/areas`, `/scheduler/groups/{id}/areas/{area_id}` | Add or remove an area. |
+| GET | `/scheduler/runs` | Recent job runs. |
+| POST | `/scheduler/runs` | Run a job action now. |
+| GET | `/scheduler/active` | Currently active schedule effects. |
+| GET | `/scheduler/areas` | Areas with the timezone used for schedules. |
+| GET | `/scheduler/diagnostics` | Configuration problems. |
+| POST | `/scheduler/quest-migration` | Convert legacy quest hours into scheduler actions. |
+
+See [Scheduler](/docs/dragonite/scheduler) for the schedule format.
+
+## Metrics and debugging
+
+| Method | Path | Description |
+| :-- | :-- | :-- |
+| GET | `/metrics` | Prometheus metrics, when `[prometheus] enabled = true`. |
+| GET | `/debug/logging/on`, `/debug/logging/off` | Switch debug logging at runtime. |
+| GET | `/debug/pprof/...` | Go profiling endpoints. |

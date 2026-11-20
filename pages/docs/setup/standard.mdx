@@ -49,8 +49,12 @@ import { Callout } from 'nextra-theme-docs'
 
 1. Modify your `dragonite/config.toml` file. Minimum requirement:
 
-    - `db.dragonite` settings
-    - `golbat_*` settings
+    - `[db.dragonite]` settings
+    - `[rotom] endpoint`
+    - at least one enabled auth provider, e.g. `[auth.ptc] enable = true`
+    - `golbat_*` settings in `[processors]`
+
+    See [Dragonite configuration](/docs/dragonite/config) for all options.
 
     > Additionally, we **highly recommend** setting a the `raw_bearer`, `api_secret` and `bearer_token` keys if this service is accessible from the public internet.
 

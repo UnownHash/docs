@@ -2,154 +2,141 @@ import { Callout } from 'nextra-theme-docs'
 
 # Dragonite Configuration
 
-<Callout type="info" emoji="🚧">
-    This page is still under construction
-</Callout>
+Dragonite reads its settings from `config.toml`. Every key has a built-in default, so you only need to set what you want to change. Start from the example config in the [Dragonite-Public](https://github.com/UnownHash/Dragonite-Public) repository.
 
-## General section
+The **Default** column below is the value Dragonite uses when the key is missing from your file.
+
+## Loading the config
+
+Dragonite looks for `config.toml` and then `configs/config.toml` in its working directory. Use `-c` / `--config` to load a different file:
+
+```bash
+./dragonite --config /etc/dragonite/config.toml
+```
+
+Most settings can be reloaded without a restart through the [`/reload` API](/docs/dragonite/api) or the reload button in [Dragonite Admin](/docs/dragonite/admin).
+
+## Minimal config
 
 ```toml
 [general]
-api_host = 127.0.0.1
-api_port = 7272 
-stats = true  #Enabled by default to write worker stats.
-...
+api_host = "127.0.0.1"
+api_port = 7272
+
+[auth.ptc]
+enable = true
+
+[koji]
+url = "http://127.0.0.1:8080"
+bearer_token = "KOJI_SECRET"
+
+[rotom]
+endpoint = "ws://127.0.0.1:7071"
+
+[processors]
+golbat_endpoint = "http://127.0.0.1:9001"
+golbat_raw_bearer = ""
+golbat_api_secret = ""
+
+[db.dragonite]
+host = "127.0.0.1"
+port = 3306
+user = "dragonite"
+password = "secret"
+name = "dragonite"
+pool_size = 10
 ```
+
+## General section
 
 | Key | Default | Description |
 | :-- | :-- | :-- |
-| `api_host` | 127.0.0.1 | Host listener address for Dragonite API. |
-| `api_port` | 7272 | Host port address for Dragonite API. |
-| `instance_name` | "" | Display name of the instance in the admin instance selection |
-| `stats` | true | Whether raw worker stats are written to the Dragonite database. |
+| `api_host` | `"0.0.0.0"` | Listen address of the Dragonite API. |
+| `api_port` | `7272` | Listen port of the Dragonite API. |
+| `instance_name` | `""` | Name of this instance, shown in Dragonite Admin's instance selector. |
+| `stats` | `true` | Write worker stats to the database. |
+| `worker_stats_interval` | `5` | Minutes between worker stats writes. |
+| `account_stats` | `true` | Write account stats to the database. |
+| `disable_fort_lookup` | `false` | Turn off [fort inspection](/docs/dragonite/modes#fort-inspection) completely (gym details, lure times, names). |
+| `disable_rsvp_scanning` | `false` | Don't collect raid RSVP data. |
 
-## Auth provider section
+<Callout type="warning">
+  Keep the Dragonite API on `127.0.0.1` or a private network (`[general] api_host`), and never expose it to the internet. People use Dragonite Admin with its login. Scripts and tools go through Dragonite Admin as well: set `api_secret` in the admin config and send it in the `X-Dragonite-Admin-Secret` header.
+</Callout>
 
-Auth provider config sections look like `[auth.<provider>]` where `<provider>` can be ptc or nk. One or both may exist and be enabled. 
-At least one section does need to exist with an 'enable = true' entry. 
-Without this, the deprecated config locations under general and tuning will be used with both providers enabled.
+## Auth sections
+
+Each login provider has its own section: `[auth.ptc]` and `[auth.nk]` (Niantic Kids). Enable at least one. See [Accounts & Auth](/docs/dragonite/accounts-auth) for how they work.
 
 ```toml
 [auth.ptc]
-# enable this provider (defaults to false)
 enable = true
-# The following 2 options allow control over whether a certain provider
-# should be used for leveling and/or scanning. Setting both to false allows
-# one to do background token work without yet logging into the game with them.
-# enable this provider for normal scanning
-# enable_scanning = true (defaults to true)
-# enable this provider for leveling
-# enable_leveling = true (defaults to true)
-
-# seconds to sleep in-between authing on one proxy
-# login_delay = 20 (defaults to 20 for both providers)
-
-# use swirlix/xilriws to remote auth PTC logins
-# remote_auth_url = 
-# background initer to collect tokens of accounts without using them - this is false by default
-# token_init_enabled = true
-# don't rely on remote auth and only use accounts with stored token - true by default
-# token_refresh_only = true
+#remote_auth_url = ""
+#token_init_enabled = true
+#token_refresh_only = true
 
 [auth.nk]
 enable = false
-#login_delay = 20
-#token_init_enabled=true
-#token_refresh_only = true
 ```
 
-⚠ Additional config variables.
-Do **NOT** change these unless you **REALLY** know what you are doing! ⚠
+<Callout type="info">
+  Without any `[auth.*]` section that has `enable = true`, Dragonite falls back to the deprecated auth keys under `[general]` and `[tuning]` and enables all providers. Add an `[auth.<provider>]` section to avoid this.
+</Callout>
 
-Dragonite has sensible defaults for these options and changing them can lead to unexpected behavior!
+| Key | Default (PTC / NK) | Description |
+| :-- | :-- | :-- |
+| `enable` | `false` | Use this provider. |
+| `enable_scanning` | `true` | Use accounts of this provider for scanning. |
+| `enable_leveling` | `true` | Use accounts of this provider for leveling. Turning off both lets the token background jobs run without logging into the game. |
+| `login_delay` | `20` | Seconds between logins on the same proxy. |
+| `remote_auth_url` | `""` | Remote login service ([Xilriws or Swirlix](/docs/dragonite/accounts-auth#remote-auth)). |
+| `remote_auth_secret` | `""` | Secret for the remote login service, if it needs one. |
+| `remote_auth_timeout_seconds` | `60` | Timeout for remote login requests. |
+| `token_refresh_only` | `true` | Only use accounts that already have a stored token; don't log in through remote auth while scanning. |
+| `token_init_enabled` | `false` | Background job that collects tokens for accounts that don't have one yet. |
+| `token_init_concurrency` | `1` | Parallel token collection requests. |
+| `token_init_interval_seconds` | `20` / `180` | Seconds between token collection requests. |
+| `token_init_start_delay_minutes` | `5` | Delay after startup before token collection starts. |
+| `token_init_retry_delay_minutes` | `60` | Wait before retrying a failed token collection. |
+| `token_refresh_concurrency` | `10` | Parallel token refresh requests. |
+| `token_refresh_days` | `28` / `12` | Refresh tokens older than this many days. `0` disables refreshing. |
+| `token_refresh_start_delay_minutes` | `5` | Delay after startup before token refresh starts. |
+| `token_refresh_banned` | `false` | Also refresh tokens of banned accounts. |
+| `token_valid_days` | `32` / `16` | Age in days after which a token is considered expired. |
+| `ip_ban_backoff_minutes` | `10` | How long to stop using a proxy after an IP ban. |
+| `auth_ban_on_refresh` | `false` | Mark a PTC account as auth-banned when its token refresh is rejected. |
+
+<Callout type="info">
+  Without `remote_auth_url`, Dragonite can't log in PTC accounts and **can't collect refresh tokens** for them; only accounts that already have a token can be used. In that case `token_init_enabled` must stay `false` and `token_refresh_only` must stay `true`, or Dragonite won't start.
+</Callout>
+
+## Accounts section
+
+```toml
+[accounts]
+required_level = 31
+leveling_level = 31
+```
+
 | Key | Default | Description |
 | :-- | :-- | :-- |
-| `token_refresh_concurrency` | 10 | define concurrency for the token background refresher |
-| `token_init_concurrency` | 1 | define concurrency for the token background initer |
-| `token_init_interval_seconds` | PTC: 20, NK: 180 | define the interval to request tokens |
-| `token_init_start_delay_minutes` | 5 | define a delay for starting the token initer |
-| `remote_auth_timeout_seconds` | 60 | define a timeout for remote auth requests |
-| `remote_init_retry_delay_minutes` |  | define a delay for retrying remote auth requests |
-| `remote_auth_secret` | "" | define a secret for remote auth requests if needed |
-| `token_refresh_days` | PTC: 28, NK: 12 | define the days after which a token should be refreshed |
-| `token_refresh_start_delay_minutes` | 5 | define a delay for starting the token refresher |
-| `ip_ban_backoff_minutes` | 15 | define how to long to backoff an IP |
-| `token_valid_days` |  | define the days a token is valid |
+| `required_level` | `31` | Minimum account level for scanning. Allowed: 31 to 40. |
+| `leveling_level` | `31` | Level that [Level mode](/docs/dragonite/modes#level) levels accounts to. Allowed: 0 to 32. |
 
 ## Koji section
 
 ```toml
 [koji]
-url = "http://ip:port"
+url = "http://127.0.0.1:8080"
 bearer_token = "KOJI_SECRET"
 ```
 
 | Key | Default | Description |
 | :-- | :-- | :-- |
-| `url` | "http://ip:port" | The URL for your Koji service. |
-| `bearer_token` | "KOJI_SECRET" | When Koji secret (`KOJI_SECRET`) configuration is enabled you must pass a secure token so Dragonite is able to communicate. |
-
-## Prometheus section
-
-```toml
-#[prometheus]
-#enabled = true
-```
-
-| Key | Default | Description |
-| :-- | :-- | :-- |
-| `enabled` | true | Uncomment and enable this value to turn on the prometheus endpoint within Dragonite. |
-
-## Tunning section
-
-```toml
-[tuning]
-#recycle_gmo_limit = 4990
-#recycle_encounter_limit = 9975
-#recycle_invasion_limit = 900
-#minimum_account_reuse_hours = 169
-#scout_age_limit = 30
-#location_delay = 2500
-#fort_location_delay = 0
-
-```
-
-| Key | Default | Description |
-| :-- | :-- | :-- |
-| `recycle_gmo_limit` | 4990 | (Advanced) Recommend keeping this value commented out. When the GMO limit is reached for a specific account it will be be rotated. |
-| `recycle_encounter_limit` | 9975 | (Advanced) Recommend keeping this value commented out. When an account has encountered this amount of pokemon it will be rotated. |
-| `recycle_invasion_limit` | 900 | (Advanced) Recommend keeping this value commented out. When an account has encountered this amount of invasions it will be rotated. |
-| `location_delay` | 2500 | This value, in milliseconds, will add a slight wait period while a worker is moving to a new location. Adding a slight delay has proven to decrease empty GMO results and positively impact scans overall. Recommend starting with 2500+ and monitoring overall results. |
-| `fort_location_delay` | 0 | This value, in milliseconds, is the same as `location_delay` however it only impacts fort scans (gyms/pokestops). When not specified, it uses the same value as `location_delay` |
-| `minimum_account_reuse_hours` | 0 | This sets the amount of hours for accounts to "rest" until they can be reused. Recommended value is 169 hours (7 days). |
-| `scout_age_limit` | 30 | Configure age limit for scout queue entries |
-| `test_shadow_banned` | true | Automatically test accounts for being shadow banned and marked as banned in database. |
-| `quest_layer_swap` | false | This option for questing will hold on to AR Quests and try to move to 'ar only scans' over time. When set to 'true' it will try and drop ar quests if you have them as required, unless your account is marked as ar banned). |
-
-### Dynamic Location Delay
-Make `location_delay`(max) dynamic by tuning against `initial_gmo_success_rate`(percentage), limited by `minimum_location_delay`(min).
-
-This is applied per worker and resets to the max value(location_delay) after an account is rotated.
-Every 50 steps Dragonite checks the success rate of GMOs without retries and adjusts location delay accordingly.
-```toml
-#Example configuration
-location_delay = 7000
-initial_gmo_success_rate = 80
-minimum_location_delay = 3000 
-```
-
-## Accounts section
-
-```toml
-#[accounts]
-#required_level = 31
-#leveling_level = 31
-```
-
-| Key | Default | Description |
-| :-- | :-- | :-- |
-| `required_level` | 30 | Minimum account level required to be used for scanning/questing. This only accepts level 30-40. |
-| `leveling_level` | 30 | Maximum level an account should reach during the leveling process. This only accepts level 30-32. |
+| `url` | `""` | URL of your [Koji](https://github.com/TurtIeSocks/Koji) instance, used to calculate routes. |
+| `bearer_token` | `""` | Koji's `KOJI_SECRET`, if set. |
+| `sort_by` | `"TSP"` | Route sorting algorithm Koji uses. |
+| `route_calc_concurrency` | `1` | How many route calculations Dragonite sends to Koji at the same time. |
 
 ## Rotom section
 
@@ -161,27 +148,12 @@ endpoint = "ws://127.0.0.1:7071"
 
 | Key | Default | Description |
 | :-- | :-- | :-- |
-| `endpoint` | "ws://127.0.0.1:7071" | This is the URL for your [RotomNG](/docs/rotom) service. It must point at RotomNG's controller listener (`controller_listener.address`, default port 7071). |
-| `secret` | "" | When RotomNG's `controller_listener.secret` is set you must pass the same token here so Dragonite is able to communicate. |
-
-## Logging section
-
-```toml
-[logging]
-save = true
-#debug = false
-#max_size = 500 # MB
-#max_age = 30 # days
-```
-
-| Key | Default | Description |
-| :-- | :-- | :-- |
-| `save` | true | When enabled Dragonite will write log files to disk. |
-| `debug` | false | When enabled Dragonite will write debug logging, which is very "chatty" and not required for general usage. |
-| `max_size` | 500 | Max size that Dragonite will allow log files to grow before being deleted. |
-| `max_age` | 30 | Time that logs will live on disk in days before Dragonite deletes the log file. |
+| `endpoint` | **required** | [RotomNG](/docs/rotom) controller listener (`controller_listener.address`, default port 7071). Dragonite won't start without it. |
+| `secret` | `""` | Must match RotomNG's `controller_listener.secret` when that is set. |
 
 ## Processors section
+
+Where Dragonite sends the game data it collects.
 
 ```toml
 [processors]
@@ -189,28 +161,183 @@ golbat_endpoint = "http://127.0.0.1:9001"
 golbat_raw_bearer = ""
 golbat_api_secret = ""
 #golbat_grpc_endpoint = "127.0.0.1:50001"
+#raw_endpoints = ["token@http://127.0.0.1:9002/raw"]
 ```
 
 | Key | Default | Description |
 | :-- | :-- | :-- |
-| `golbat_endpoint` | "http://127.0.0.1:9001" | Golbat (http) Endpoint is singular and will configure an endpoint for raw sending and API. |
-| `golbat_raw_bearer` | false | Golbat raw bearer value (empty string for none). |
-| `golbat_api_secret` | 500 | Golbat secret when making api calls (empty string for none). |
-| `golbat_grpc_endpoint` | 30 | When enabled dragonite will not send raws to the `golbat_endpoint` (http endpoint). |
+| `golbat_endpoint` | `""` | Golbat HTTP address, **without** `/raw`. Used for raw data and Golbat API calls. Required even when gRPC is used. |
+| `golbat_raw_bearer` | `""` | Golbat's `raw_bearer`. Used for HTTP and gRPC raw sending. |
+| `golbat_api_secret` | `""` | Golbat's `api_secret`. |
+| `golbat_grpc_endpoint` | `""` | Golbat gRPC address (`grpc_port`). When set, raw data goes over gRPC instead of HTTP. |
+| `raw_endpoints` | `[]` | Additional destinations that accept the raw format, as `"token@url"` or `"url"`. |
+| `max_concurrent_raw_sends` | `100` | Maximum in-flight raw sends per destination (HTTP and gRPC). Excess sends are dropped and counted in metrics. |
 
 ## Database section
 
 ```toml
 [db.dragonite]
 host = "127.0.0.1"
-...
+port = 3306
+user = ""
+password = ""
+name = "dragonite"
+pool_size = 10
+```
+
+| Key | Description |
+| :-- | :-- |
+| `host` | Database host. |
+| `port` | Database port. |
+| `user` | Database user. |
+| `password` | Database password. |
+| `name` | Database (schema) name. |
+| `pool_size` | Maximum connections to the database. |
+
+See [Database](/docs/other/database).
+
+## Scheduler section
+
+```toml
+[scheduler]
+enabled = true
 ```
 
 | Key | Default | Description |
 | :-- | :-- | :-- |
-| `host` | "127.0.0.1" | Database host address. |
-| `port` | 3306 | Database port address. |
-| `user` | "" | Database username. |
-| `password` | "" | Database password. |
-| `name` | "dragonite" | Database table name. |
-| `pool_size` | 1 | Database pool size is used to control how many connections are made from Dragonite. |
+| `enabled` | `true` | Run the [scheduler](/docs/dragonite/scheduler). Turning it off also stops scheduled route recalculation and quest scans. |
+
+## Tuning section
+
+**⭐ Advanced option ⭐** The defaults are chosen to keep accounts safe. Change them only if you know why.
+
+### Account recycling
+
+Accounts are rotated out once they reach a request limit.
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `recycle_gmo_limit` | `50000` | Map requests per account. |
+| `recycle_encounter_limit` | `13500` | Encounters per account. |
+| `recycle_gym_limit` | `9975` | Gym detail requests per account. |
+| `recycle_invasion_limit` | `900` | Invasions per account. |
+| `minimum_account_reuse_hours` | `0` | Hours an account rests before it can be used again. 169 (7 days) is a common choice. |
+| `test_shadow_banned` | `true` | Detect shadow-banned accounts and mark them as banned. |
+
+### Movement and delays
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `location_delay` | `1000` | Milliseconds to wait after moving before requesting map data (Pokémon mode). A longer delay reduces empty results. |
+| `fort_location_delay` | `-1` | Same for Fort mode. `-1` uses `location_delay`. |
+| `rare_location_delay` | `-1` | Delay after each [rare Pokémon](/docs/dragonite/modes#rare-pokémon) queue item. `-1` uses `location_delay`. |
+| `scout_location_delay` | `-1` | Delay after each [scout](/docs/dragonite/modes#scout) queue item. `-1` uses `location_delay`, `0` disables it. Only affects dedicated scout workers. |
+| `speed` | `0` | Cap the delay by movement speed in km/h: the delay becomes `min(location_delay, distance / speed)`. `0` disables this. |
+| `initial_gmo_success_rate` | `0` | Make `location_delay` dynamic. See below. |
+| `minimum_location_delay` | `0` | Lower limit for the dynamic location delay. |
+| `distance` | `0` | Distance from which `distance_delay` is added when the first map request fails. |
+| `distance_delay` | `0` | Extra delay in milliseconds for such jumps. |
+
+#### Dynamic location delay
+
+With `initial_gmo_success_rate` set, Dragonite treats `location_delay` as the maximum and adjusts each worker's delay to reach that success rate (in percent) for first-try map requests, never going below `minimum_location_delay`. The delay is checked every 50 steps and resets to the maximum when the account is rotated.
+
+```toml
+[tuning]
+location_delay = 7000
+initial_gmo_success_rate = 80
+minimum_location_delay = 3000
+```
+
+### Scanning
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `encounter_pokemon` | `true` | Encounter Pokémon seen by Pokémon and rare Pokémon workers. When `false`, Pokémon are reported without IVs. Scouts are not affected. |
+| `scout_age_limit` | `30` | Minutes before an unprocessed scout request is dropped. |
+| `fort_inspection_interval_minutes` | `360` | Re-inspect every fort at least this often. `0` disables timed inspection. |
+| `lured_fort_recheck_minutes` | `5` | Re-inspect lured pokestops this often to catch lure extensions. |
+| `rare_pokemon_minimum_seen` | `500` | Pokémon an area must have seen before rarity is calculated for [rare Pokémon mode](/docs/dragonite/modes#rare-pokémon). |
+| `rare_pokemon_scan_cell` | `false` | Also look for rare Pokémon among nearby cell Pokémon. |
+| `rare_pokemon_only_matches` | `false` | Rare Pokémon workers only encounter their target, not other Pokémon they see. |
+| `team_selection` | `""` | Team for accounts without one: empty or `random`, `mystic`, `valor`, `instinct`, or `off`. |
+
+### Quests
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `quest_quarantine` | `true` | Only quest with quest-capable accounts (PTC accounts not known to be AR-banned). See [quest quarantine](/docs/dragonite/accounts-auth#quest-quarantine). |
+| `reserve_quest_accounts` | `false` | Let Pokémon and Fort workers use non-quest-capable accounts first, so quest-capable accounts stay available for questing. |
+
+### Invasions
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `invasion_leaders` | `false` | Also queue leader and Giovanni invasions. This needs accounts with a Rocket Radar. |
+| `invasion_queue_limit_per_worker` | `10` | Queue size per invasion worker. |
+| `max_grunt_queue_size` | `0` | Maximum grunt queue size. `0` uses the per-worker limit × invasion workers. |
+| `max_leader_queue_size` | `0` | Maximum leader queue size. `0` uses the per-worker limit × invasion workers. |
+
+### Login
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `disable_ptc_auth_bypass` | `false` | Always do a full PTC login instead of reusing a recently refreshed token. |
+
+## GMO section
+
+**⭐ Advanced option ⭐** Controls retries of map requests (GMO).
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `retries` | `8` | Maximum attempts per location. |
+| `no_pokemon_delay` | `3000` | Milliseconds to wait before retrying when the response has no Pokémon. |
+| `no_cell_delay` | `3000` | Milliseconds to wait before retrying when the response has no cells. |
+| `allow_consecutive_failures` | `3` | Consecutive locations with an empty response (or no Pokémon where Pokémon were seen before) before the worker gives up on the account. The account is tested for a shadow ban first. |
+| `allow_consecutive_no_pokemon` | `10` | Same for locations visited for the first time that return no Pokémon. |
+| `max_consecutive_rpc_errors` | `5` | Consecutive request errors before the session is restarted. |
+
+## Logging section
+
+```toml
+[logging]
+save = true
+#debug = false
+```
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `save` | `true` | Write log files to `logs/`. |
+| `debug` | `false` | Debug logging. Very verbose. |
+| `max_size` | `500` | Log file size in MB before rotation. |
+| `max_age` | `30` | Days to keep rotated files. |
+| `max_backups` | `1000` | Rotated files to keep. |
+
+## Prometheus section
+
+```toml
+[prometheus]
+enabled = true
+#token = ""
+```
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `enabled` | `false` | Serve metrics at `/metrics` on the API port. |
+| `token` | `""` | When set, `/metrics` requires `Authorization: Bearer <token>`. |
+| `bucket_size` | `[.00005 … 10]` | Histogram buckets in seconds. |
+
+See [Prometheus](/docs/other/prometheus).
+
+## Pyroscope section
+
+Continuous profiling with [Pyroscope](https://pyroscope.io).
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `server_address` | `""` | Pyroscope server. Empty disables profiling. |
+| `application_name` | `"dragonite"` | Application name in Pyroscope. |
+| `api_key` | `""` | Pyroscope API key. |
+| `logger` | `false` | Log Pyroscope client output. |
+| `mutex_profile_fraction` | `5` | Mutex profile sampling. |
+| `block_profile_rate` | `5` | Block profile sampling. |

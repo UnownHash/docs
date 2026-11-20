@@ -1,0 +1,119 @@
+import { Callout } from 'nextra-theme-docs'
+
+# Dragonite Admin
+
+Dragonite Admin is the web interface for Dragonite. It runs as its own small service (default port **7273**), adds a login, and forwards requests to the [Dragonite API](/docs/dragonite/api), which has no authentication of its own. It can also read quest and device status from Golbat.
+
+One admin instance can manage several Dragonite instances; switch between them in the top bar.
+
+<Callout type="info">
+  Update Dragonite and Dragonite Admin together. The admin expects the API of the matching Dragonite version.
+</Callout>
+
+## Install
+
+Dragonite Admin is published with Dragonite in the [Dragonite-Public](https://github.com/UnownHash/Dragonite-Public) repository.
+
+### Binary
+
+`run.sh` in Dragonite-Public downloads the latest `admin-<os>-<arch>` binary into `admin/`. Releases are tagged `admin-vX.Y.Z`.
+
+```sh
+cd Dragonite-Public
+./run.sh
+cp admin/config.toml.example admin/config.toml
+nano admin/config.toml
+cd admin && pm2 start ./admin-linux-amd64 --name dragonite-admin
+```
+
+The admin reads `config.toml` from its working directory, so start it from the `admin/` folder.
+
+### Docker
+
+```yml filename="docker-compose.yml"
+services:
+  admin:
+    image: ghcr.io/unownhash/dragonite-public-admin:latest
+    container_name: admin
+    restart: unless-stopped
+    environment:
+      - ADMIN.GENERAL.PORT=7273
+      - ADMIN.GENERAL.USERNAME=admin
+      - ADMIN.GENERAL.PASSWORD=change-me
+      - ADMIN.GENERAL.JWT_SECRET=output-of-openssl-rand-hex-32
+      - ADMIN.BACKENDS.0.DRAGONITE_ENDPOINT=http://dragonite:7272
+      - ADMIN.BACKENDS.0.GOLBAT_ENDPOINT=http://golbat:9001
+      - ADMIN.BACKENDS.0.GOLBAT_API_SECRET=
+    ports:
+      - 7273:7273
+```
+
+## Configuration
+
+```toml filename="config.toml"
+[general]
+host = "0.0.0.0"
+port = 7273
+username = "admin"
+password = "change-me"
+jwt_secret = ""   # generate with: openssl rand -hex 32
+api_secret = ""
+
+[[backends]]
+dragonite_endpoint = "http://127.0.0.1:7272"
+golbat_endpoint = "http://127.0.0.1:9001"
+golbat_api_secret = ""
+```
+
+Every key can also be set as an environment variable: `ADMIN.` followed by the upper-cased key path, for example `ADMIN.GENERAL.PASSWORD` or `ADMIN.BACKENDS.0.DRAGONITE_ENDPOINT`. Environment variables override the file.
+
+### General section
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `host` | `"0.0.0.0"` | Listen address. |
+| `port` | `7273` | Listen port. |
+| `log_level` | `"info"` | Log level. |
+| `username` | `""` | Login username. |
+| `password` | `""` | Login password. |
+| `jwt_secret` | `""` | Secret used to sign login sessions. **Set it whenever you use a login**, at least 32 characters: `openssl rand -hex 32`. Changing it logs everyone out. |
+| `token_ttl` | `"720h"` | How long a login stays valid (Go duration). |
+| `jwt_issuer` | `"dragonite-admin"` | Issuer written into login sessions. Changing it logs everyone out. |
+| `api_secret` | `""` | Lets scripts and tools use the admin API without a login. See [API access](#api-access). |
+
+<Callout type="warning">
+  With `username` and `password` both empty, the admin has **no login** and anyone who can reach it controls your Dragonite. Always set a username, password and `jwt_secret` when the admin is reachable from other machines.
+</Callout>
+
+### Backends
+
+Add one `[[backends]]` block per Dragonite instance. The name shown in the admin is the Dragonite [`instance_name`](/docs/dragonite/config#general-section).
+
+| Key | Description |
+| :-- | :-- |
+| `dragonite_endpoint` | Dragonite API address (`api_host:api_port`). |
+| `golbat_endpoint` | Golbat HTTP address. Optional; used for quest progress and device locations. |
+| `golbat_api_secret` | Golbat's `api_secret`. |
+
+## Pages
+
+| Page | What you can do |
+| :-- | :-- |
+| **Dashboard** | Workers per area and mode, queues, global rate limit, reload buttons for config, accounts and proxies. Shows when a new version is available. |
+| **Accounts** | Account list and statistics, CSV import, bulk actions (make available, clear cooldown, reset banned/suspended/disabled/invalid states). |
+| **Areas** | Draw geofences, edit routes on a map, configure [Pokémon, Quest, Fort and Rare Pokémon modes](/docs/dragonite/modes), recalculate routes with Koji, start and stop quests, see quest progress. |
+| **Invasion Mode**, **Scout Mode**, **Level Mode** | Configure the [global mode](/docs/dragonite/modes#global-modes) worker pools and see their statistics. |
+| **Proxies** | Add, import and edit proxies and see their statistics. |
+| **Scheduler** | **Schedules**, **Groups** and the **Run Ledger** of the [scheduler](/docs/dragonite/scheduler). |
+
+Press <kbd>Ctrl</kbd>+<kbd>K</kbd> (<kbd>⌘</kbd>+<kbd>K</kbd> on macOS) for the command palette.
+
+## API access
+
+Scripts and tools should talk to the admin instead of exposing the Dragonite API. With `api_secret` set, send it in the `X-Dragonite-Admin-Secret` header. The admin forwards `/api/<path>` to `<path>` on Dragonite. To pick a backend when you have several, send its instance name in `X-Backend-Instance`.
+
+```sh
+curl -H "X-Dragonite-Admin-Secret: $SECRET" http://127.0.0.1:7273/api/status
+```
+
+Only the endpoints the admin itself uses are forwarded; others return 404.
