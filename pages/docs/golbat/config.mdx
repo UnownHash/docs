@@ -2,23 +2,44 @@ import { Callout } from 'nextra-theme-docs'
 
 # Golbat Configuration
 
-This documentation outlines all available configuration keys for Golbat. It is important to note that the presence of a configuration key does not necessitate its specification in your `config.toml` file. The advised approach is to start with the standard configuration file from the repository. Only append additional keys to this base file if there is a need to alter Golbat's default operational parameters.
+Golbat reads its settings from a TOML file. Every key has a built-in default, so you only need to set what you want to change. Start from [`config.toml.example`](https://github.com/UnownHash/Golbat/blob/main/config.toml.example) in the repository and add keys from this page as needed.
 
-<Callout type="info" emoji="🚧">
-  This page is still under construction
-</Callout>
+The **Default** column below is the value Golbat uses when the key is missing from your file. The example config sometimes sets a different value; where that matters it is called out.
 
-## Root Section
+## Loading the config
+
+- Golbat reads `config.toml` from its working directory. Use `-c` / `--config` to load a different file:
+  ```bash
+  ./golbat --config /etc/golbat/config.toml
+  ```
+  The default `config.toml` is optional. A file passed with `--config` must exist.
+- **Environment variables** override the file. The name is `GOLBAT.` followed by the upper-cased key path, for example `GOLBAT.DATABASE.ADDRESS` or `GOLBAT.CLEANUP.STATION_BATTLES`. Array-of-table sections take an index: `GOLBAT.WEBHOOKS.0.URL`, `GOLBAT.SCAN_RULES.1.CONTEXT`. See [`docker-compose.yml.example`](https://github.com/UnownHash/Golbat/blob/main/docker-compose.yml.example) for a full example.
+
+## Root section
 
 ```toml
-port = 9001                  # Listening port for golbat
-#grpc_port = 50001           # Listening port for gRPC.
-raw_bearer = ""              # Raw bearer (password) required
-api_secret = "golbat"        # Golbat secret required on api calls (blank for none)
-pokemon_memory_only = false  # Use in-memory storage for pokemon only. This only disabled Golbat from writing to the Pokemon Table. The in memory tracking is always enabled.
+port = 9001
+#grpc_port = 50001
+raw_bearer = ""
+api_secret = "golbat"
+pokemon_memory_only = true
 ```
 
-## Koji Section
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `port` | `0` | HTTP listening port for `/raw` and the API. The example uses `9001`. |
+| `grpc_port` | `0` (off) | gRPC listening port. Serves both raw ingest and the [gRPC query API](/docs/golbat/api#grpc-api). |
+| `raw_bearer` | `""` | When set, `/raw` requires `Authorization: Bearer <raw_bearer>`. |
+| `api_secret` | `""` | When set, API calls require the `X-Golbat-Secret` header (gRPC: `x-golbat-secret` metadata). Empty disables the check. |
+| `api_docs` | `true` | Serves interactive API docs at `/docs` plus `/openapi.json` and `/schemas`. These never require the API secret. |
+| `pokemon_memory_only` | `false` | Stop writing Pokémon to the `pokemon` table. Golbat always tracks Pokémon in memory and serves them over the API, so most setups enable this (the example config does). |
+| `preserve_pokemon` | `false` | With `pokemon_memory_only`, save the in-memory Pokémon to the database on shutdown and restore them on startup. |
+| `pokemon_internal_to_db` | `false` | Write the internal scan-history blob to the database for encountered Pokémon. |
+| `store_username` | `false` | Store the reporting account on the Pokémon row. When off, Pokémon webhooks report the account that triggered the save, and saves without one carry `"username": null`. |
+| `preload` | `false` | Load forts, stations and recent spawnpoints into cache at startup. Faster first responses, longer startup. |
+| `fort_in_memory` | `false` | Keep forts in an in-memory spatial index. Required for the fort `scan` and `available` [API endpoints](/docs/golbat/api) (they return 503 without it). Experimental. |
+
+## Koji section
 
 ```toml
 [koji]
@@ -26,64 +47,150 @@ url = "http://{koji_url}/api/v1/geofence/feature-collection/{golbat_project}"
 bearer_token = "secret"
 ```
 
-## Cleanup Section
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `url` | `""` | Koji feature-collection endpoint for the geofences Golbat uses for area stats, webhook areas and scan rules. |
+| `bearer_token` | `""` | Koji bearer token. |
+
+Without a Koji URL, Golbat reads `geojson/geofence.json` instead. Koji results are cached in `cache/koji_geofence.json` and used if Koji is unreachable at startup. Reload geofences without restarting via [`/api/reload-geojson`](/docs/golbat/api#admin).
+
+## Cleanup section
 
 ```toml
 [cleanup]
-pokemon = true          # Keep pokemon table is kept nice and short
-incidents = true        # Remove incidents after expiry
-quests = true           # Remove quests after expiry
-stats = true            # Enable/Disable stats history
-stats_days = 7          # Remove entries from ["pokemon_stats", "pokemon_shiny_stats", "pokemon_iv_stats", "pokemon_hundo_stats", "pokemon_nundo_stats" after x days
-device_hours = 24       # Remove devices from in memory after not seen for x hours
+pokemon = true
+incidents = true
+station_battles = true
+quests = true
+tappables = true
+stats = true
+stats_days = 7
+device_hours = 24
 ```
 
-## Logging Section
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `pokemon` | `true` | Remove expired Pokémon from the `pokemon` table (only relevant when Pokémon are written to the database). |
+| `incidents` | `true` | Remove expired invasions. |
+| `station_battles` | `true` | Remove expired max battles. |
+| `quests` | `true` | Remove expired quests. |
+| `tappables` | `true` | Remove expired tappables. |
+| `stats` | `false` | Prune [statistics tables](/docs/golbat/stats) older than `stats_days`. The example config enables it. |
+| `stats_days` | `7` | Days to keep in `pokemon_stats`, `pokemon_shiny_stats`, `pokemon_iv_stats`, `pokemon_hundo_stats`, `pokemon_nundo_stats`, `invasion_stats`, `quest_stats` and `raid_stats`. |
+| `device_hours` | `24` | Forget devices not seen for this many hours. |
+| `forts_stale_threshold` | `3600` | Seconds before a fort missing from cell scans is considered stale and removed. |
+| `forts_min_miss_count` | `1` | Consecutive cell scans a fort must be missing from before it can be considered stale. |
+
+## Logging section
 
 ```toml
 [logging]
 debug = false
 save_logs = true
-max_size = 50           # Size in MB
-max_backups = 10        # Amount of files to keep
-max_age = 30            # Day(s) to keep files
-compress = true         # Compress to gz archive
+max_size = 50
+max_backups = 10
+max_age = 30
+compress = true
 ```
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `debug` | `false` | Debug logging. |
+| `api_request_logging` | `false` | Log raw request and response bodies of all `/api` endpoints. Very large; enable only while debugging a client. |
+| `save_logs` | `false` | Write logs to `logs/`. The example config enables it. |
+| `max_size` | `50` | Log file size in MB before rotation. |
+| `max_backups` | `10` | Rotated files to keep. |
+| `max_age` | `30` | Days to keep rotated files. |
+| `compress` | `true` | Gzip rotated files. |
 
 ## Database section
 
 ```toml
 [database]
-user = ""                  # Database username
-password = ""              # Database password
-address = "127.0.0.1:3306" # Address with port for the database
-db = ""                    # Database table name
-max_pool = 100             # Max pool connection to allocate to the database
+user = ""
+password = ""
+address = "127.0.0.1:3306"
+db = ""
+max_pool = 100
 ```
 
-## PVP Section
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `user` | `""` | Database user. |
+| `password` | `""` | Database password. |
+| `address` | `""` | `host:port` of the database. |
+| `db` | `""` | Database (schema) name. |
+| `max_pool` | `100` | Maximum connections in the pool. |
+
+Golbat supports MariaDB (MySQL may work but is not tested) and creates and migrates its tables automatically on startup. See [Database](/docs/other/database).
+
+## PvP section
 
 ```toml
 [pvp]
 enabled = true
 include_hundos_under_cap = false
+level_caps = [50, 51]
+#ranking_comparator = "prefer_higher_cp"
 ```
 
-## Scan Rules Section
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `enabled` | `false` | Calculate PvP rankings for encountered Pokémon. |
+| `include_hundos_under_cap` | `false` | Include 100% IV Pokémon below the level cap in rankings. |
+| `level_caps` | `[50, 51]` | Level caps used in rankings. |
+| `ranking_comparator` | `""` | Empty uses tied rankings (1, 1, 3, 4). `prefer_higher_cp` or `prefer_lower_cp` break ties (1, 2, 3, 4), matching external calculators. |
 
-**⭐ Advanced Option ⭐**
+See [PvP](/docs/golbat/pvp).
 
-With Scan Rules you can modify the behavior globally for all areas, for specific areas or specific scanner 'modes'.
-These will be processed in order, first match applies - and allows disabling of processing certain types of game objects.
+## Weather section
 
-A global scan rule example:
+```toml
+[weather]
+proactive_iv_switching = true
+proactive_iv_switching_to_db = false
+```
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `proactive_iv_switching` | `true` | When a cell's weather changes, update the IVs of Pokémon in that cell for the new boost state without waiting for a rescan. |
+| `proactive_iv_switching_to_db` | `false` | Also write those changes to the database. |
+
+Both can be overridden per area or scanner mode with [scan rules](#scan-rules).
+
+## Scan rules
+
+**⭐ Advanced option ⭐**
+
+Scan rules change which game objects Golbat processes, either globally, for specific areas, or for specific scanner modes (`context`). Rules are checked in order and **the first matching rule applies**. Keys you leave out keep their normal behaviour.
+
+| Key | Description |
+| :-- | :-- |
+| `areas` | Geofence names the rule applies to (`"Parent/Name"`, `"Parent/*"` or `"Name"`). |
+| `context` | Scanner modes the rule applies to. Dragonite sends `Fort`, `Pokemon`, `Quest`, `Scout` and `RarePokemon`. Matching ignores case. |
+| `pokemon` | Any Pokémon processing (also disables spawnpoints). |
+| `wild_pokemon` | Wild Pokémon from the GMO. |
+| `nearby_pokemon` | Nearby Pokémon at a pokestop. |
+| `nearby_cell_pokemon` | Nearby Pokémon without a pokestop, placed at the S2 cell centre. **Off unless a rule sets it to `true`**; `nearby_pokemon` does not enable it. |
+| `weather` | Weather from the GMO. |
+| `cells` | Cell updates. Disabling this also disables automatic removal of stale forts. |
+| `pokestops` | Pokestops from the GMO. |
+| `gyms` | Gyms from the GMO. |
+| `stations` | Power spot stations from the GMO. |
+| `tappables` | Tappables. |
+| `proactive_iv_switching` | Override the `[weather]` setting for matching data. |
+| `proactive_iv_switching_to_db` | Override the `[weather]` setting for matching data. |
+
+A global rule: drop Pokémon without IVs from the GMO and nearby Pokémon.
+
 ```toml
 [[scan_rules]]
-wild_pokemon = false   # disables Pokémon without iv from the gmo (waits for encounter)
-nearby_pokemon = false # disables cell/pokestop Pokémon
+wild_pokemon = false
+nearby_pokemon = false
 ```
 
-Here the main area would not process nearby pokemon. Messages arriving in 'scout' mode would have everything processed; and the default would not process any pokemon (so outside main area not delivered by the scout service)
+Per area and per mode: the main area skips nearby Pokémon, everything from Scout mode is processed, and no Pokémon are processed anywhere else.
+
 ```toml
 [[scan_rules]]
 areas = ["MainArea"]
@@ -96,7 +203,8 @@ context = ["Scout"]
 pokemon = false
 ```
 
-Example with the use of *context* for various scanner 'modes':
+Per mode only:
+
 ```toml
 [[scan_rules]]
 context = ["Quest"]
@@ -104,69 +212,110 @@ context = ["Quest"]
 [[scan_rules]]
 context = ["Fort"]
 pokemon = false
-nearby_pokemon = false
-wild_pokemon = false
-
-[[scan_rules]]
-context = ["Invasion"]
-pokemon = false
-nearby_pokemon = false
-wild_pokemon = false
 
 [[scan_rules]]
 context = ["Pokemon"]
 nearby_pokemon = false
 ```
-| Key | Description |
-| :-- | :-- |
-| `pokemon` | any pokemon processing (also disables spawnpoints) |
-| `wild_pokemon` | process wild pokemon from GMO |
-| `nearby_pokemon` |  process nearby pokemon from GMO |
-| `weather` | process weather in GMO |
-| `gyms` | process gyms in GMO |
-| `pokestop` | process pokestops in GMO |
-| `cells` | process cell updates (disabling this also disables automatic fort clearance) |
 
-## Sentry Section
+<Callout type="info">
+  Under heavy load, disabling `nearby_pokemon` saves a lot of processing.
+</Callout>
 
-## Pyroscope Section
+## Webhooks section
 
-## Test Fort In Memory Section
-
-## Tuning Section
-
-**⭐ Advanced Option ⭐**
-
-```toml
-[tuning]
-extended_timeout = true
-max_pokemon_results = 3000
-```
-
-## Prometheus Section
-
-```toml
-[prometheus]
-enabled = false  # Enable or disable the Prometheus endpoint for external reporting
-```
-
-## Webhook section
-
-You can specify more than one webhook destination by including the [[webhooks]] section multiple times. The hook types can optionally be filtered by using the types array
+Add one `[[webhooks]]` block per destination.
 
 ```toml
 [[webhooks]]
 url = "http://localhost:4201"
-# types if specified can be...
-# types = ["pokemon", "pokemon_iv", "pokemon_no_iv", "gym", "invasion", "quest", "pokestop", "raid", "weather", "fort_update"]
-# "pokemon" includes both with ivs and without. "pokemon_iv" will only be encountered pokemon. "pokemon_no_iv" may be nearby pokemon that have not been encountered (yet).
+types = ["pokemon_iv", "raid", "quest"]
 
-#[[webhooks]]
-#url = "http://localhost:4202"
-#types = ["raid"]
-
-#[[webhooks]]
-#url = "http://localhost:4202"
-#types = ["raid"]
-#areas = ["London/*", "*/Harrow", "Harrow"]
+[[webhooks]]
+url = "http://localhost:4202"
+types = ["raid"]
+areas = ["London/*", "*/Harrow"]
+exclude_areas = ["London/Westminster"]
+headers = ["X-Poracle-Secret:abc"]
 ```
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `url` | | Destination URL. |
+| `types` | all | Webhook types to send: `pokemon`, `pokemon_iv`, `pokemon_no_iv`, `gym`, `raid`, `quest`, `pokestop`, `invasion`, `weather`, `fort_update`, `max_battle`, `tappable`, `raid_lobby`, `max_battle_lobby`. |
+| `areas` | all | Only send messages from these areas. |
+| `exclude_areas` | none | Never send messages from these areas. Exclusion wins over `areas`. |
+| `headers` | none | Extra HTTP headers as `"Name:value"` strings. The value cannot contain another `:`. |
+
+`pokemon` covers both `pokemon_iv` (all three IVs known) and `pokemon_no_iv` (IVs not known yet). See [Webhooks](/docs/golbat/webhooks) for payloads and when each type fires.
+
+## Prometheus section
+
+```toml
+[prometheus]
+enabled = true
+token = ""
+```
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `enabled` | `false` | Serve metrics at `/metrics`. |
+| `token` | `""` | When set, `/metrics` requires `Authorization: Bearer <token>`. |
+| `bucket_size` | `[.00005 … 10]` | Histogram buckets in seconds. |
+| `live_stats` | `false` | Periodically query the database and export current gym, raid and invasion counts. |
+| `live_stats_sleep` | `120` | Seconds between live stats updates. |
+
+See [Prometheus](/docs/other/prometheus).
+
+## Stats intervals section
+
+```toml
+[stats_intervals]
+pokemon_stats_interval_minutes = 1
+pokemon_count_interval_minutes = 10
+raid_stats_interval_minutes = 10
+invasion_stats_interval_minutes = 15
+quest_stats_interval_minutes = 15
+```
+
+How often the [statistics tables](/docs/golbat/stats) are written, in minutes. The defaults are shown above.
+
+## Tuning section
+
+**⭐ Advanced option ⭐** The defaults suit most installs.
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `max_pokemon_results` | `3000` | Maximum Pokémon returned per API scan. |
+| `max_pokemon_distance` | `100` | Maximum diagonal of a Pokémon scan area, in km. |
+| `max_fort_results` | `9000` | Maximum gyms, pokestops or stations returned per fort scan. |
+| `max_tappable_results` | `9000` | Maximum tappables returned per scan. |
+| `extended_timeout` | `false` | Raise the per-proto processing timeout from 5 s to 30 s. |
+| `reduce_updates` | `false` | Write unchanged forts every 12 hours instead of every 15 minutes, and spawnpoint `last_seen` every 12 hours instead of 6. Reduces database load. |
+| `max_concurrent_proactive_iv_switch` | `6` | Parallel cells processed on weather changes. |
+| `write_behind_startup_delay` | `120` | Seconds after startup during which database writes are only queued. |
+| `write_behind_worker_count` | `16` | Maximum parallel batch writers. Raise only if write latency grows in steady state. |
+| `write_behind_batch_size` | `50` | Rows per batch write. |
+| `write_behind_batch_timeout` | `100` | Milliseconds to wait before flushing a partial batch. |
+| `raw_processing_concurrency` | `0` | Concurrent raw decoders. `0` = 4× CPUs (max 96), `-1` = unlimited. |
+| `raw_processing_queue_factor` | `0` | Decode queue size as a multiple of the concurrency limit. `0` = 32. When full, requests are dropped. |
+| `s2_cell_lookup` | `false` | Precompute geofence lookups per S2 cell. About 7× faster matching for about 60× the geofence file size in memory. |
+| `slow_db_query_ms` | `0` | Log `[DB_SLOW]` for queries slower than this. `0` = 1000 ms, `-1` = off. |
+| `gogc_percent` | `0` | Go GC target (Go default 100). Higher values use more memory and less CPU. `0` leaves Go's default. |
+| `go_mem_limit_mib` | `0` | Soft memory limit in MiB. `0` = off. Useful as a backstop when raising `gogc_percent`. |
+| `profile_routes` | `false` | Enable `/debug/pprof` endpoints. |
+| `profile_contention` | `false` | Collect block and mutex profiles. Has a performance cost. |
+
+## Pyroscope section
+
+Continuous profiling with [Pyroscope](https://pyroscope.io).
+
+| Key | Default | Description |
+| :-- | :-- | :-- |
+| `server_address` | `""` | Pyroscope server. Empty disables profiling. |
+| `application_name` | `"golbat"` | Application name in Pyroscope. |
+| `basic_auth_user` | `""` | Basic auth user. |
+| `basic_auth_password` | `""` | Basic auth password. |
+| `logger` | `false` | Log Pyroscope client output. |
+| `mutex_profile_fraction` | `5` | Mutex profile sampling. |
+| `block_profile_rate` | `5` | Block profile sampling. |

@@ -1,6 +1,6 @@
 # Golbat
 
-[**Golbat**](https://github.com/UnownHash/Golbat) is our data processor. Its job is to accept HTTP or gRPC requests, format them into something useful, save them to your database, and optionally send webhooks to external services. Golbat has been thoroughly tested with large instances processing many thousands of requests per second.
+[**Golbat**](https://github.com/UnownHash/Golbat) is our data processor. Its job is to accept raw game data over HTTP or gRPC, turn it into something useful, save it to your database, serve it to maps over an [HTTP and gRPC API](/docs/golbat/api), and optionally send [webhooks](/docs/golbat/webhooks) to external services. Golbat has been thoroughly tested with large instances processing many thousands of requests per second.
 
 One of Golbat's best features is that pokemon encounters are stored in memory. This allows maps, like ReactMap, to connect to Golbat over an API allowing for a vastly improved experience over SQL queries. This also reduces server operations as your database will not constantly be filled full of short lived events that are deleted within a hour.
 
@@ -14,4 +14,4 @@ Any client that is able to output raw game protos should technically be parsable
 - [PogoDroid](https://github.com/Map-A-Droid/MAD) (Android)
 - [--=FurtiF™=-- Tools](https://discord.gg/wtNgst3W64) (Android)
 
-If any MITM developer would like to be fully compliant with Golbat's parsing specifications feel free to reach out on [Discord](./docs/help).
+If any MITM developer would like to be fully compliant with Golbat's parsing specifications feel free to reach out on [Discord](/docs/help).
