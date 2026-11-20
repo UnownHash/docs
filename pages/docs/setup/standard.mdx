@@ -4,8 +4,9 @@ import { Callout } from 'nextra-theme-docs'
 
 ## Prerequisites
 
-- [Go 1.24](https://go.dev/doc/install)
-- [Node 22](https://nodejs.org/en/download)
+- [Go 1.26](https://go.dev/doc/install) _(RotomNG requires 1.26.3 or newer)_
+- [Node 22](https://nodejs.org/en/download) _(v20.8 minimum, v24+ recommended)_
+- [Bun 1.3](https://bun.sh/) _(used to build the RotomNG web UI)_
 - [Git](https://git-scm.com/downloads) _(`git` might be pre-installed)_
 - [PM2](https://pm2.io/docs/runtime/guide/installation/) `npm install -g pm2` or `yarn global add pm2`
 - [jq](https://jqlang.github.io/jq/download/) `sudo apt-get install jq`
@@ -101,49 +102,48 @@ import { Callout } from 'nextra-theme-docs'
 
 </Callout>
 
-## Install Rotom
+## Install RotomNG
 
 1. Clone repo
 
     ```sh
-    git clone https://github.com/UnownHash/Rotom.git
+    git clone https://github.com/UnownHash/RotomNG.git
     ```
 
 1. Change into cloned repo
 
     ```sh
-    cd Rotom
+    cd RotomNG
     ```
 
 1. Create configuration file
 
     ```sh
-    cp config/local.json.example config/local.json
+    cp configs/rotom-ng.toml.example configs/rotom-ng.toml
     ```
 
-1. Modify your configuration file at `config/local.json`
+1. Modify your configuration file at `configs/rotom-ng.toml`
 
-    Please note Rotom does not have any authentication for it's web client. It is recommended that you run this service on your internal network, behind a Firewall, or protected by a cloud based application layer.
+    Every section is optional and has sensible defaults, so you only need to add what you want to change. See the [RotomNG Configuration](/docs/rotom/config) page for all options.
 
-    - The `client.host` might need to be updated to `0.0.0.0` depending on how you run your server.
-    - You can also modify the monitoring values however it is unclear if they are actually used by any MITM tools at this time.
+    Please note the RotomNG web client does not send the API secret, so setting `http_listener.secret` protects the API but leaves the web UI unable to load data. It is recommended that you run this service on your internal network, behind a Firewall, or protected by a cloud based application layer.
 
-1. Install the dependencies
-
-    ```sh
-    npm ci
-    ```
+    - Set `controller_listener.secret` if RotomNG is reachable from the public internet, and use the same value in Dragonite's `[rotom]` section.
+    - The listeners bind to all interfaces by default (`":7070"`, `":7071"`, `":7072"`). Prefix the address with an IP to restrict them, e.g. `address = "127.0.0.1:7072"`.
 
 1. Build the application
 
     ```sh
-    npm run build
+    make
     ```
+
+    This installs the frontend dependencies with Bun, builds the UI, and compiles the Go binary
+    to `./rotom-ng`.
 
 1. To run the service
 
     ```sh
-    npm run start
+    ./rotom-ng
     ```
 
     By default you should be able to access the frontend via [http://serverIP:7072]()
@@ -159,7 +159,7 @@ All services are now setup but navigating to each folder and starting each servi
     ```sh
     cd /path/to/Dragonite/ && ./run.sh
     cd /path/to/Golbat && go build golbat
-    cd /path/to/Rotom/ && npm ci && npm run build
+    cd /path/to/RotomNG/ && make
     ```
 
 1. Run the following to start and save a service
@@ -170,8 +170,8 @@ All services are now setup but navigating to each folder and starting each servi
     pm2 start ./admin-linux-amd64 --name "dragonite-admin" -o "/dev/null"
     # Golbat
     pm2 start ./golbat --name "golbat" -o "/dev/null"
-    # Rotom
-    pm2 start dist/packages/server/main.js --name "rotom"
+    # RotomNG
+    pm2 start ./rotom-ng --name "rotom-ng" -o "/dev/null"
 
     pm2 save
     ```
@@ -185,7 +185,7 @@ Instead of creating each service individually we can use an [PM2 - Ecosystem Fil
     ```sh
     cd /path/to/Dragonite/ && ./run.sh
     cd /path/to/Golbat && go build golbat
-    cd /path/to/Rotom/ && npm ci && npm run build
+    cd /path/to/RotomNG/ && make
     ```
 
 1. Create your config file
@@ -223,9 +223,9 @@ Instead of creating each service individually we can use an [PM2 - Ecosystem Fil
             max_memory_restart: '4G'
         },
         {
-            name: 'rotom',
-            script: 'dist/packages/server/main.js',
-            cwd: '/home/username/Rotom/',
+            name: 'rotom-ng',
+            script: 'rotom-ng',
+            cwd: '/home/username/RotomNG/',
             instances: 1,
             autorestart: true,
             log_date_format: "YYYY-MM-DD HH:mm",
@@ -300,24 +300,24 @@ Since each service is an individual component it is possible to update just one.
     pm2 restart golbat
     ```
 
-### Rotom
+### RotomNG
 
-1. Change into Rotom directory
+1. Change into RotomNG directory
 
     ```sh
-    cd path/to/Rotom
+    cd path/to/RotomNG
     ```
 
 1. Pull latest git changes and compile
 
     ```sh
-    git pull && npm ci && npm run build
+    git pull && make
     ```
 
 1. Restart service
 
     ```sh
-    pm2 restart rotom
+    pm2 restart rotom-ng
     ```
 
 ### All projects
@@ -342,13 +342,13 @@ Make sure to update the hightlighted path variable on line 2.
     cd "$START_DIR"/Dragonite
     ./run.sh
     
-    echo "Updating Rotom"
-    cd "$START_DIR"/Rotom
-    npm ci
-    npm run build
+    echo "Updating RotomNG"
+    cd "$START_DIR"/RotomNG
+    git pull
+    make
 
     cd ~
-    pm2 restart golbat dragonite dragonite-admin rotom
+    pm2 restart golbat dragonite dragonite-admin rotom-ng
 
     echo "All services have been updated"
     ```

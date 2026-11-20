@@ -1,0 +1,101 @@
+import { Callout } from 'nextra-theme-docs'
+
+# Migrating from Rotom OG
+
+RotomNG is the Go rewrite of the original Node.js Rotom ("Rotom OG"). Devices and Dragonite
+talk to it exactly as before &mdash; same websocket protocol, same default ports &mdash; so the
+migration is mostly about the config file. The HTTP API and the Prometheus metrics changed too,
+which matters if you built tooling or dashboards against them.
+
+The full, field by field guide lives in the repo:
+[RotomNG-Vs-OG.md](https://github.com/UnownHash/RotomNG/blob/main/docs/RotomNG-Vs-OG.md).
+
+## Steps
+
+1. Stop Rotom OG.
+
+1. Install RotomNG. See [Docker Setup](/docs/setup/docker) or [Standard Setup](/docs/setup/standard).
+
+1. Convert your old config. The repo ships a conversion script that reads your old
+   `config/local.json` and writes the new TOML file:
+
+    ```sh
+    python3 configs/rotom-og-to-ng.py /path/to/Rotom/config/local.json configs/rotom-ng.toml
+    ```
+
+    Review the result against the [configuration reference](/docs/rotom/config).
+
+1. Copy your job files (if you used jobs) into the `jobs` directory and set `jobs.enable = true`.
+
+1. Start RotomNG and reconnect your devices.
+
+<Callout type="info" emoji="ℹ️">
+  Dragonite needs no changes. Its `[rotom]` section still points at the controller listener
+  (`ws://HOST:7071`) and the `secret` key still maps to `controller_listener.secret`.
+</Callout>
+
+## Configuration
+
+The config format changed from JSON (`config/local.json`) to TOML (`configs/rotom-ng.toml`).
+Some highlights:
+
+| Rotom OG | RotomNG |
+| :-- | :-- |
+| `deviceListener.port` | `device_listener.address` (`":7070"`) |
+| `controllerListener.port` | `controller_listener.address` (`":7071"`) |
+| `client.port` / `client.host` | `http_listener.address` (`":7072"`) |
+| _(n/a)_ | `http_listener.secret` &mdash; optional API authentication |
+| _(n/a)_ | `prometheus.enable` &mdash; metrics are now opt-in |
+
+## HTTP API
+
+- **Authentication** &mdash; OG had none. NG supports an optional `X-Rotom-Secret` header on all
+  `/api` endpoints, configured with `http_listener.secret`.
+- **Methods** &mdash; device actions and job execution moved from `POST` to `PUT`.
+- **Metrics** &mdash; `GET /metrics` moved to `GET /api/metrics` and must be enabled with
+  `prometheus.enable = true`.
+- **Field names** &mdash; all JSON fields are now `snake_case` (OG used `camelCase`), and
+  `GET /api/status` nests workers under their device.
+- **Removed** &mdash; `GET /api/getPublicIp` (public IP is now on the device object) and
+  `POST /api/ptcLogin`.
+- **Jobs** &mdash; `GET /api/job/list` became `GET /api/job`, job execution became
+  `PUT /api/job/:jobId/run` with device IDs in the JSON body, and `GET /api/job/status` became
+  `GET /api/job-instance`.
+
+The complete endpoint list is in
+[RotomNG-API.md](https://github.com/UnownHash/RotomNG/blob/main/docs/RotomNG-API.md).
+
+## Prometheus metrics
+
+All metrics moved to the `rotom_ng` namespace (configurable via `prometheus.namespace`), and
+the Node.js runtime metrics (`nodejs_*`, `process_*`) were replaced by Go runtime metrics
+(`rotom_ng_go_*`, `rotom_ng_process_*`). Renamed metrics:
+
+| Rotom OG | RotomNG |
+| :-- | :-- |
+| `rotom_devices_alive` | `rotom_ng_devices_connected` (adds an `origin` label) |
+| `rotom_devices_total` | `rotom_ng_devices_total` (adds an `origin` label) |
+| `rotom_workers_total` | `rotom_ng_workers_connected` |
+| `rotom_workers_active` | `rotom_ng_workers_in_use` |
+| `rotom_device_memory_free` | `rotom_ng_device_memory_free` |
+| `rotom_device_memory_mitm` | `rotom_ng_device_memory_mitm` |
+| `rotom_device_memory_start` | `rotom_ng_device_memory_start` |
+
+NG also adds counters and histograms for device commands, registrations, connection accepts,
+worker requests/responses, controllers, RPCs and app lifecycle events. Existing Grafana
+dashboards built for Rotom OG will need their queries updated.
+
+## Web UI
+
+OG had two pages (Status and Jobs). NG splits things up and adds detail:
+
+| Page | Route | Notes |
+| :-- | :-- | :-- |
+| Status | `/` | Aggregated controller, device and worker metrics |
+| Devices | `/devices` | New dedicated page, expandable rows, enable/disable toggles |
+| Controllers | `/controllers` | New &mdash; controller monitoring, reconnect/disconnect |
+| Workers | `/workers` | New &mdash; per-worker stats and request rates |
+| Jobs | `/jobs` | Reload from disk, start/finish timestamps, clear instances |
+
+Destructive actions (reboot, restart, disconnect) now ask for confirmation, and devices can be
+disabled so they are skipped for selection without disconnecting them.
