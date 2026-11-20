@@ -1,6 +1,7 @@
 {
   "index": "Introduction",
   "config": "Configuration",
+  "admin": "Dragonite Admin",
   "modes": "Areas & Modes",
   "accounts-auth": "Accounts & Auth",
   "scheduler": "Scheduler",
