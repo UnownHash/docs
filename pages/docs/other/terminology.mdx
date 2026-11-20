@@ -4,7 +4,7 @@ This page includes definitions for most of the commonly used components used wit
 
 ##### Accounts
 
-Niantic Pokemon Trainer Club (PTC) accounts that can be used with the Pokemon Go application.
+Pokemon Trainer Club (PTC) or Niantic Kids (NK) accounts that can be used with the Pokemon Go application. See [Accounts & Auth](/docs/dragonite/accounts-auth).
 
 ##### Area
 
@@ -32,11 +32,11 @@ Proxies are used by workers in order to login to the PTC service. Generally as y
 
 ##### Level Mode
 
-This mode can be used to send workers on a pre-defined route in order to catch Pokemon and spin Pokestops. In turn accounts will gain experience and reach level 30. Once level 30 has been reached the worker will be re-assigned a new account to start leveling.
+This mode can be used to send workers on a pre-defined route in order to catch Pokemon and spin Pokestops. In turn accounts will gain experience and reach the level set in `accounts.leveling_level` (31 by default). Once that level has been reached the worker will be re-assigned a new account to start leveling.
 
 ##### Scout Mode
 
-This mode can be considered an On-Demand scan mode. Once workers are added to this pool end users can use a tool like [ReactMap](./other/third-party) to send workers to specific locations around the world. Useful to get data for rare pokemon or locations outside of regular scan regions.
+This mode can be considered an On-Demand scan mode. Once workers are added to this pool end users can use a tool like [ReactMap](/docs/other/third-party#reactmap) to send workers to specific locations around the world. Useful to get data for rare pokemon or locations outside of regular scan regions.
 
 ##### MITM client
 

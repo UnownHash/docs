@@ -12,7 +12,6 @@ import { Callout } from 'nextra-theme-docs'
 1. Download the docker-compose example file
 
     ```yml filename="docker-compose.yml"
-    version: "3.7"
     services:
       dragonite:
         image: ghcr.io/unownhash/dragonite-public:latest
@@ -37,20 +36,14 @@ import { Callout } from 'nextra-theme-docs'
         container_name: admin
         restart: unless-stopped
         environment:
-          ADMIN.GENERAL.HOST=0.0.0.0
-          ADMIN.GENERAL.PORT=7273
-          ADMIN.GENERAL.USERNAME=admin
-          ADMIN.GENERAL.PASSWORD=password
-          ADMIN.GENERAL.LOG_LEVEL=info
-          ADMIN.GENERAL.API_SECRET=''
-
-          ADMIN.BACKENDS.0.DRAGONITE_ENDPOINT=http://dragonite:7272
-          ADMIN.BACKENDS.0.GOLBAT_ENDPOINT=http://golbat:9001
-    #      ADMIN.BACKENDS.0.GOLBAT_API_SECRET=
-
-    #      ADMIN.BACKENDS.1.DRAGONITE_ENDPOINT=http://dragonite:7274
-    #      ADMIN.BACKENDS.1.GOLBAT_ENDPOINT=http://golbat:9002
-    #      ADMIN.BACKENDS.1.GOLBAT_API_SECRET=
+          - ADMIN.GENERAL.PORT=7273
+          - ADMIN.GENERAL.USERNAME=admin
+          - ADMIN.GENERAL.PASSWORD=change-me
+          # generate with: openssl rand -hex 32
+          - ADMIN.GENERAL.JWT_SECRET=
+          - ADMIN.BACKENDS.0.DRAGONITE_ENDPOINT=http://dragonite:7272
+          - ADMIN.BACKENDS.0.GOLBAT_ENDPOINT=http://golbat:9001
+          - ADMIN.BACKENDS.0.GOLBAT_API_SECRET=golbat1234
         ports:
           - "7273:7273" # change left one for external port
       golbat:
@@ -132,7 +125,7 @@ import { Callout } from 'nextra-theme-docs'
     wget -O rotom-ng.toml https://raw.githubusercontent.com/UnownHash/RotomNG/main/configs/rotom-ng.toml.example
     ```
 
-1. Modify your three config files and `docker-compose.yml` files
+1. Modify your three config files and `docker-compose.yml`
 
     Make sure to update the highlighted lines from our snippets into your config files.
 
@@ -189,44 +182,24 @@ import { Callout } from 'nextra-theme-docs'
     address = ":7072"
     ```
 
-    ```yml filename="docker-compose.yml" {8,9,10,12,13}
-    ...
-    admin:
-        image: ghcr.io/unownhash/dragonite-public-admin:latest
-        container_name: admin
-        restart: unless-stopped
-        environment:
-          ADMIN_GENERAL_HOST: 0.0.0.0
-          ADMIN_GENERAL_USERNAME: admin
-          ADMIN_GENERAL_PASSWORD: password
-          ADMIN_DRAGONITE_API_ENDPOINT: http://dragonite:7272
-          ADMIN_DRAGONITE_API_SECRET: secret
-          ADMIN_GOLBAT_API_ENDPOINT: http://golbat:9001
-          ADMIN_GOLBAT_API_SECRET: golbat1234
-        ...
-    ```
+    In `docker-compose.yml`, set the admin's `USERNAME`, `PASSWORD` and `JWT_SECRET`, and use the same `GOLBAT_API_SECRET` as Golbat's `api_secret`. See [Dragonite Admin](/docs/dragonite/admin) for all options.
 
 1. Start the services
 
+    ```sh
+    docker compose pull
+    docker compose up -d
+    ```
+
     <Callout type="info" emoji="ℹ️">
-        If this is the first time using GitHub container registry you will need to login. When prompted use your personal access token **not** password. [More info](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-with-a-personal-access-token-classic)
-
-    ```sh
-    docker login ghcr.io -u GITHUB_USERNAME
-    ```
-
+        If `docker compose pull` fails with `denied` or `unauthorized`, you probably have old GitHub credentials stored. Run `docker logout ghcr.io` and try again. The images are public and don't need a login.
     </Callout>
-
-    ```sh
-    docker-compose pull
-    docker-compose up -d
-    ```
 
 ## Updating
 
 Updating with docker is straight forward
 
 ```sh
-docker-compose pull
-docker-compose up -d
+docker compose pull
+docker compose up -d
 ```

@@ -56,15 +56,15 @@ import { Callout } from 'nextra-theme-docs'
 
     See [Dragonite configuration](/docs/dragonite/config) for all options.
 
-    > Additionally, we **highly recommend** setting a the `raw_bearer`, `api_secret` and `bearer_token` keys if this service is accessible from the public internet.
+    > The Dragonite API has no login. Keep `[general] api_host` on `127.0.0.1` or a private network.
 
-1. Modify your `admin/config.toml` file. The defaults will work out of box but are **not secure**.
+1. Modify your `admin/config.toml` file. Set `username`, `password` and a `jwt_secret` (`openssl rand -hex 32`) before making it reachable from other machines. See [Dragonite Admin](/docs/dragonite/admin).
 
-1. To run the service
+1. Test-run both services from their own folders, as they read `config.toml` from the working directory
 
     ```sh
-    cd admin && ./admin-linux-amd64
-    cd dragonite && ./dragonite-linux-amd64
+    (cd dragonite && ./dragonite-linux-amd64)
+    (cd admin && ./admin-linux-amd64)
     ```
 
 ## Install Golbat
@@ -170,10 +170,10 @@ All services are now setup but navigating to each folder and starting each servi
 
    ```sh
     # Dragonite
-    pm2 start ./dragonite-linux-amd64 --name "dragonite" -o "/dev/null"
-    pm2 start ./admin-linux-amd64 --name "dragonite-admin" -o "/dev/null"
+    cd /path/to/Dragonite/dragonite && pm2 start ./dragonite-linux-amd64 --name "dragonite" -o "/dev/null"
+    cd /path/to/Dragonite/admin && pm2 start ./admin-linux-amd64 --name "dragonite-admin" -o "/dev/null"
     # Golbat
-    pm2 start ./golbat --name "golbat" -o "/dev/null"
+    cd /path/to/Golbat && pm2 start ./golbat --name "golbat" -o "/dev/null"
     # RotomNG
     pm2 start ./rotom-ng --name "rotom-ng" -o "/dev/null"
 
@@ -344,6 +344,7 @@ Make sure to update the hightlighted path variable on line 2.
     echo "Updating Dragonite"
     pm2 stop dragonite dragonite-admin
     cd "$START_DIR"/Dragonite
+    git pull
     ./run.sh
     
     echo "Updating RotomNG"

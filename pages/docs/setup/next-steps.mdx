@@ -28,11 +28,18 @@ I know you want me to go setup _yet another_ thing but this is important as Koji
 
 Now that you have configured the service go modify your **Golbat** and **Dragonite** config files making sure to add your `koji_endpoint`.
 
+## Create your first area
+
+1. In Dragonite Admin, switch to **Areas** and create an area by drawing its geofence.
+1. Enable the modes you want and set their worker counts. See [Areas & Modes](/docs/dragonite/modes).
+1. Calculate the routes with Koji from the area page.
+1. Quest scans and route recalculation are scheduled by the [scheduler](/docs/dragonite/scheduler). Check **Scheduler → Schedules** and add a quest schedule.
+
 ## Setup RDM Raw Reflection (Legacy)
 
 The [Hybrid Setup](/docs/other/hybrid-setup) will allow you to continue using RealDeviceMap (RDM) to control your devices while sending data to Golbat for processing.
 
-## Modify MITM client (Legacy)
+## Other MITM clients
 
 <Callout type="info" emoji="ℹ️">
   If you are using RDM Raw Mirroring you can skip this section.

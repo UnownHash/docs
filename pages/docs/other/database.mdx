@@ -26,11 +26,10 @@ Standard installation is thoroughly documented on external sites like [https://m
 1. Sample service with docker:
 
     ```yml filename="docker-compose.yml"
-    version: '3.7'
     services:
       db:
         image: mariadb:10.11
-        command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default-authentication-plugin=mysql_native_password --binlog-expire-logs-seconds=86400
+        command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --binlog-expire-logs-seconds=86400
         container_name: db
         restart: unless-stopped
         environment:
