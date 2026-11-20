@@ -1,0 +1,76 @@
+import { Callout } from 'nextra-theme-docs'
+
+# Areas & Modes
+
+Dragonite organises scanning into **areas** and **modes**. An area is a geofence with its own routes and worker counts for each scanning mode. Other modes run as global pools across all areas. You manage both in Dragonite Admin or through the [API](/docs/dragonite/api).
+
+## Area modes
+
+Each area can enable these modes. Routes are calculated by [Koji](https://github.com/TurtIeSocks/Koji); see the [FAQ](/docs/dragonite/faq#q-what-settings-does-dragonite-use-when-creating-a-route) for the route settings.
+
+### Pokémon
+
+Workers walk a spawnpoint route and report all Pokémon, forts and weather they see. Pokémon are encountered for IVs (`tuning.encounter_pokemon`), and an encounter cache makes sure only one worker encounters each Pokémon.
+
+| Option | Description |
+| :-- | :-- |
+| `workers` | Number of workers. |
+| `enable_scout` | These workers also handle [scout](#scout) requests inside the area. |
+| `invasion` | Queue invasions these workers see for [lineup detection](#invasion). |
+| `geofence` | Optional geofence for this mode only. Defaults to the area geofence. |
+
+### Fort
+
+Workers scan gyms and pokestops on an S2-cell route, which covers a larger area per worker than Pokémon routes. Fort mode uses two routes: a **full route** that covers the whole geofence, and an **optimised route** that skips steps without active forts. By default the full route runs once a day (see [default schedules](/docs/dragonite/scheduler#default-schedules)).
+
+| Option | Description |
+| :-- | :-- |
+| `workers` | Number of workers. |
+| `prio_raid` | Fort workers jump to gyms when raid eggs hatch, so raid bosses are known right away. |
+| `showcase` | Fort workers also collect pokestop showcase data. Pokémon workers always do. |
+| `invasion` | Queue invasions these workers see for [lineup detection](#invasion). |
+| `geofence` | Optional geofence for this mode only. |
+
+### Quest
+
+Pokémon workers switch to the quest route, spin every pokestop and collect its quests, then go back to Pokémon mode. Quest scans are started by the [scheduler](/docs/dragonite/scheduler#quests) or manually through Dragonite Admin or the [API](/docs/dragonite/api). Dragonite can also check a few pokestops to detect whether quests changed (for example at the start of an event) and rescan only then.
+
+| Option | Description |
+| :-- | :-- |
+| `workers` | Number of workers that switch to questing. |
+| `hours` | Legacy fixed quest hours. Use the [scheduler](/docs/dragonite/scheduler#quests) instead. |
+| `geofence` | Optional geofence for this mode only. |
+
+Only quest-capable accounts are used for quests; see [quest quarantine](/docs/dragonite/accounts-auth#quest-quarantine).
+
+### Rare Pokémon
+
+Dragonite counts how often each species is seen in an area. Once an area has seen `tuning.rare_pokemon_minimum_seen` Pokémon, sightings of rare species are queued, and rare Pokémon workers go to them and encounter them.
+
+| Option | Description |
+| :-- | :-- |
+| `workers` | Number of rare Pokémon workers. |
+| `permyriad` | Which species count as rare: the rarest species that together make up this many per ten thousand sightings. `0` uses only `extra`. |
+| `extra` | Pokédex numbers that always count as rare. |
+
+## Global modes
+
+### Scout
+
+Scout workers jump to coordinates requested over the [API](/docs/dragonite/api#scout), for example from ReactMap, and encounter the Pokémon there. Requests older than `tuning.scout_age_limit` minutes are dropped. Pokémon workers in areas with `enable_scout` help with requests inside their area.
+
+### Invasion
+
+Invasion workers start invasions queued by Pokémon and Fort workers and read the Rocket lineup. Leaders and Giovanni are only queued with `tuning.invasion_leaders = true` and need accounts with a Rocket Radar. Queue sizes are set in the [tuning section](/docs/dragonite/config#invasions).
+
+### Level
+
+Level workers level new accounts up to `accounts.leveling_level`, so they can be used for scanning (`accounts.required_level`).
+
+## Fort inspection
+
+While scanning in any mode except Level, Dragonite opens gyms and pokestops to collect details that the map doesn't show: names and images, gym defenders, exact lure times and showcases. A fort is inspected when something changes (gym team, free slots or defenders, a new lure) and at least every `tuning.fort_inspection_interval_minutes`. Lured pokestops are rechecked every `tuning.lured_fort_recheck_minutes` to catch extended lures.
+
+<Callout type="info">
+  Turn fort inspection off completely with `general.disable_fort_lookup = true`.
+</Callout>

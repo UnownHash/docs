@@ -1,22 +1,24 @@
-import { Callout } from 'nextra-theme-docs'
-
 # Dragonite Troubleshooting
-
-<Callout type="info" emoji="🚧">
-  This page is still under construction
-</Callout>
 
 ## Quests not scanning
 
 - Check your **Area** in Dragonite Admin. Make sure:
 
     - A quest route is saved
-    - **Quest Mode** is Enabled
-    - **Quest Hours** has at least one number in the Array.
+    - **Quest Mode** is enabled and has workers
+    - A [schedule](/docs/dragonite/scheduler#quests) starts quests for the area (or legacy **Quest Hours** are set)
 
-- Check your Dragonite Logs: `grep QUESTCHECK`
+- Check that you have quest-capable accounts. With [quest quarantine](/docs/dragonite/accounts-auth#quest-quarantine) only PTC accounts that are not AR-banned can quest.
+- Check your Dragonite logs: `grep QUESTCHECK` and `grep SCHEDULER`
 
 ## Koji route issues
 
-- Check your Dragonite Logs: `grep KOJI`
-- Check your Dragonite Logs: `grep CRON`
+- Check your Dragonite logs: `grep KOJI`
+- Check scheduled route jobs in **Dragonite Admin → Scheduler → Run Ledger**, or in your logs: `grep SCHEDULER`
+- Check [`/scheduler/diagnostics`](/docs/dragonite/api#scheduler) for schedule configuration problems.
+
+## Dragonite doesn't start
+
+- `rotom endpoint is missing from config`: set `[rotom] endpoint`.
+- `[auth.ptc] has no remote_auth_url ...`: set `remote_auth_url`, or keep `token_init_enabled = false` and `token_refresh_only = true`. Without remote auth, refresh tokens can't be collected. See [Accounts & Auth](/docs/dragonite/accounts-auth#remote-auth).
+- `invalid accounts required level`: `accounts.required_level` must be between 31 and 40.

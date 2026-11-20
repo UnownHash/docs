@@ -1,6 +1,10 @@
 {
   "index": "Introduction",
   "config": "Configuration",
+  "modes": "Areas & Modes",
+  "accounts-auth": "Accounts & Auth",
+  "scheduler": "Scheduler",
+  "api": "API",
   "faq": "FAQ",
   "troubleshooting": "Troubleshooting"
 }

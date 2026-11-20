@@ -1,0 +1,119 @@
+import { Callout } from 'nextra-theme-docs'
+
+# Scheduler
+
+The scheduler runs time-based changes in Dragonite: scaling workers, pausing areas, switching route modes, recalculating routes and starting quest scans. It replaces the old fixed cron jobs, and can take over quest scheduling from the legacy per-area quest hours. Manage schedules in **Dragonite Admin → Scheduler** or through the [`/scheduler` API](/docs/dragonite/api#scheduler).
+
+The scheduler is on by default (`[scheduler] enabled = true`). Turning it off also stops route recalculation.
+
+## Concepts
+
+- **Schedule** – a named set of actions that apply to targets at certain times.
+- **Target** – the areas a schedule applies to: area names, groups, or both, minus any `exclude` entries.
+- **Group** – a named set of areas (optionally limited to certain worker types) and global pools. Built-in groups: `all`, `all-pokemon`, `all-fort`, `all-quest` and `all-rare`.
+- **Window** – when something applies: start time (`at`, `HH:MM`), optional days (`["mon-fri"]`, `["sat","sun"]`) and a duration (`for`, e.g. `8h`).
+- **Run ledger** – the history of executed jobs, under **Scheduler → Run Ledger** in Dragonite Admin.
+
+Windows use each area's **local timezone**, taken from its geofence. Set `tz` on a schedule to use a fixed timezone instead.
+
+## Schedule kinds
+
+| Kind | Applies |
+| :-- | :-- |
+| `recurring` | Every time its windows match. |
+| `dated` | All day on the listed `dates` (`YYYY-MM-DD`), for example event days. |
+| `manual` | Once, until `expires_at`. Useful for temporary overrides. |
+
+When several schedules change the same thing at the same time, the one with the highest `priority` wins. Defaults are 100 for recurring, 500 for dated and 1000 for manual schedules.
+
+## Actions
+
+**State actions** apply while a window is active and are undone when it ends.
+
+| `op` | `type` | Effect |
+| :-- | :-- | :-- |
+| `scale` | `pokemon`, `fort`, `quest`, `rare` or a pool (`level`, `invasion`, `scout`) | Change the worker count, by `delta` (relative) or `set` (absolute). |
+| `pause` | worker type, or empty for the whole area | Pause workers (`value: true`). |
+| `route_mode` | `fort` | Use the `full` or `optimised` fort route. |
+
+**Job actions** run once at a time (`at` or the window start).
+
+| `type` | `op` | Effect |
+| :-- | :-- | :-- |
+| `pokemon`, `fort`, `quest` | `fetch_route` | Recalculate the route with Koji. |
+| `quest` | `start_quest` | Start a full quest scan (clears existing quests unless `params.clear` is `"false"`). |
+| `quest` | `check_quest` | Check a few pokestops and start a quest scan only if quests changed. |
+
+`on_missed` decides what happens to a job missed while Dragonite was down: `skip` (default) or `run_once`.
+
+## Default schedules
+
+New installs come with these schedules, which you can edit or disable:
+
+| Schedule | What it does |
+| :-- | :-- |
+| **fort routes** | 00:00 recalculate the full fort route, 02:00–03:00 walk the full route, 04:00 recalculate the optimised fort route. |
+| **quest routes** | 23:00 recalculate quest routes. |
+
+## Quests
+
+Start a quest scan every night and re-check for changed quests during the day:
+
+```json
+{
+  "name": "Daily quests",
+  "schedule_kind": "recurring",
+  "targets": { "groups": ["all-quest"] },
+  "actions": [
+    { "kind": "job", "type": "quest", "op": "start_quest", "at": "00:05" },
+    { "kind": "job", "type": "quest", "op": "check_quest", "at": "08:00" },
+    { "kind": "job", "type": "quest", "op": "check_quest", "at": "16:00" }
+  ]
+}
+```
+
+<Callout type="info">
+  Areas that still use quest hours can be converted with `POST /scheduler/quest-migration`, which turns each area's quest hours into scheduler actions.
+</Callout>
+
+## Pokémon route refresh
+
+Recalculate Pokémon routes from recently seen spawnpoints twice a week. At 01:00 workers switch to a bootstrap route that covers the whole area, and at 06:00 the route is replaced with one built from spawnpoints seen in the last 13 hours:
+
+```json
+{
+  "name": "Twice-weekly Pokemon route refresh",
+  "schedule_kind": "recurring",
+  "targets": { "groups": ["all-pokemon"] },
+  "actions": [
+    {
+      "kind": "job", "type": "pokemon", "op": "fetch_route",
+      "params": { "coverage": "bootstrap" },
+      "windows": [{ "days": ["mon", "fri"], "at": "01:00" }],
+      "on_missed": "skip"
+    },
+    {
+      "kind": "job", "type": "pokemon", "op": "fetch_route",
+      "params": { "last_seen": "13h" },
+      "windows": [{ "days": ["mon", "fri"], "at": "06:00" }],
+      "on_missed": "skip"
+    }
+  ]
+}
+```
+
+`last_seen` takes a duration counted back from the scheduled time, or `local_midnight`. If a calculation fails or returns no points, the current route stays in place.
+
+## Scaling example
+
+Run 2 fewer Pokémon workers in all areas between 01:00 and 06:00.
+
+```json
+{
+  "name": "Night scale-down",
+  "schedule_kind": "recurring",
+  "targets": { "groups": ["all-pokemon"] },
+  "windows": [{ "at": "01:00", "for": "5h" }],
+  "actions": [{ "kind": "state", "type": "pokemon", "op": "scale", "delta": -2 }]
+}
+```
