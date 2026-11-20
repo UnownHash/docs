@@ -3,3 +3,11 @@
 ##### Q: What level accounts are required?
 
 Golbat requires all accounts be level 30+ to perform standard scanning. This requirement makes sure that all IV and quest scans have proper values.
+
+##### Q: Fort scans return `503 fort_in_memory not enabled`.
+
+Set `fort_in_memory = true` in the root of your config. Maps that use the fort scan endpoints need it.
+
+##### Q: My scan rule for pokestops has no effect.
+
+The key is `pokestops`, not `pokestop`. Unknown keys are ignored silently.

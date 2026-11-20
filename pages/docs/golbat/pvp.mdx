@@ -6,6 +6,22 @@ The Player vs. Player (PvP) calculation that Golbat uses is powered by [Gohbem](
 
 If there are errors or feature enhancements around PvP calculation, they must be addressed in this library before being added to Golbat. This library is mostly a background artifact unless Niantic releases a new PvP league or modifies level caps. There are a few outstanding feature enhancements, but the core project functions as intended.
 
+## Configuration
+
+PvP rankings are calculated for encountered Pokémon when `[pvp] enabled = true`.
+
+```toml
+[pvp]
+enabled = true
+include_hundos_under_cap = false
+level_caps = [50, 51]
+#ranking_comparator = "prefer_higher_cp"
+```
+
+- `level_caps` sets the level caps used for rankings (default `[50, 51]`).
+- By default Gohbem uses tied rankings (1, 1, 3, 4). Set `ranking_comparator` to `prefer_higher_cp` or `prefer_lower_cp` for unique rankings (1, 2, 3, 4) that match external calculators such as GO Stadium and PvP IVs.
+- `include_hundos_under_cap` also ranks 100% IV Pokémon below the level cap.
+
 ---
 
 <SourceLink

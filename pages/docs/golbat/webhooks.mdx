@@ -1,0 +1,72 @@
+import { Callout } from 'nextra-theme-docs'
+
+# Golbat Webhooks
+
+Golbat can send game events to other tools such as [PoracleNG](https://github.com/jfberry/PoracleNG) over HTTP webhooks. Destinations are set up in the [`[[webhooks]]` config section](/docs/golbat/config#webhooks-section).
+
+This page explains how delivery works and when each type is sent. Field-by-field payload definitions are in [`webhooks.md`](https://github.com/UnownHash/Golbat/blob/main/webhooks.md) in the repository.
+
+## Delivery
+
+- Golbat sends a `POST` with `Content-Type: application/json`, the header `X-Golbat: hey!`, and any `headers` from your config.
+- Messages are **batched and flushed every second**. The body is a JSON array that can contain many messages of different types:
+  ```json
+  [
+    { "type": "pokemon", "message": { ... } },
+    { "type": "raid", "message": { ... } }
+  ]
+  ```
+- There are **no retries**. Any response is accepted, and failed deliveries are lost.
+- There is no request timeout and no batch size limit, so a slow receiver builds up a backlog in Golbat. Keep receivers fast and reachable.
+- The same object can be sent many times over its lifetime (for example a Pokémon first seen, then encountered). Receivers should handle repeats.
+
+## Area filtering
+
+Each message is matched against your geofences ([Koji or `geojson/geofence.json`](/docs/golbat/config#koji-section)) before it is sent.
+
+| Pattern | Matches |
+| :-- | :-- |
+| `areas` omitted or empty | All areas |
+| `"Parent/*"` | Every area under `Parent` |
+| `"*/Name"` or `"Name"` | Area `Name` under any parent |
+| `"Parent/Name"` | Exactly that area |
+
+A message is delivered when it matches **none** of `exclude_areas` and either `areas` is empty or it matches one of `areas`. `exclude_areas` works on its own to send everything except a few areas. Area names are not included in the payload.
+
+## Types
+
+The `types` value in your config selects which of these are sent. The `type` field in the payload is shown where it differs.
+
+| Config type | Payload `type` | Sent when |
+| :-- | :-- | :-- |
+| `pokemon` | `pokemon` | Both `pokemon_iv` and `pokemon_no_iv`. |
+| `pokemon_iv` | `pokemon` | A Pokémon with all three IVs known is new, or its species, weather boost, CP, encounter state or despawn time changed. |
+| `pokemon_no_iv` | `pokemon` | Same, while IVs are still unknown. |
+| `gym` | `gym_details` | A gym is new, or its team, free slots or in-battle state changed. |
+| `raid` | `raid` | A new or changed raid egg or boss, including RSVP changes, while it has not expired. |
+| `pokestop` | `pokestop` | A lure, power-up or showcase starts or changes on a pokestop. Lures ending do not send a message. |
+| `quest` | `quest` | A quest is first seen or its type changes. AR and non-AR quests are sent separately (`with_ar`). |
+| `invasion` | `invasion` | An invasion is new, or its expiry, character, confirmation or first lineup Pokémon changed. |
+| `weather` | `weather` | A weather cell is new or its weather or warning changed. |
+| `fort_update` | `fort_update` | A pokestop or gym is new (`new`), its name, description, image or location changed (`edit`), or it disappeared from the game (`removal`). |
+| `max_battle` | `max_battle` | A power spot station with an active max battle is new, or its battle changed. |
+| `tappable` | `tappable` | A tappable is new or its reward type changed. |
+| `raid_lobby` | `raid_lobby` | A raid lobby player count is received for a known gym. Sent for every update. |
+| `max_battle_lobby` | `max_battle_lobby` | Same for a max battle lobby at a known station. |
+
+<Callout type="info">
+  To check whether a Pokémon was actually encountered, use `seen_type`. Only `encounter`, `lure_encounter`, `tappable_encounter` and `tappable_lure_encounter` mean the Pokémon was actually encountered.
+</Callout>
+
+## `seen_type` values
+
+| Value | Meaning |
+| :-- | :-- |
+| `nearby_cell` | Nearby Pokémon without a pokestop. Location is the S2 cell centre and imprecise. |
+| `nearby_stop` | Nearby Pokémon at a pokestop. Location is the pokestop and imprecise. |
+| `wild` | Wild Pokémon at its real location, not encountered. |
+| `encounter` | Encountered. IVs, moves, size and PvP data are observed. |
+| `lure_wild` | Lured Pokémon, not encountered. |
+| `lure_encounter` | Lured Pokémon, encountered. |
+| `tappable_encounter` | Encountered through a tappable. |
+| `tappable_lure_encounter` | Encountered through a tappable at a lured pokestop. |

@@ -87,10 +87,10 @@ import { Callout } from 'nextra-theme-docs'
 
     - database settings
 
-1. Build and run the service
+1. Build and run the service. The `go_json` build tag is required.
 
     ```sh
-    go run .
+    go run -tags go_json .
     ```
 
 <Callout type="info" emoji="ℹ️">
@@ -158,7 +158,7 @@ All services are now setup but navigating to each folder and starting each servi
 
     ```sh
     cd /path/to/Dragonite/ && ./run.sh
-    cd /path/to/Golbat && go build golbat
+    cd /path/to/Golbat && make
     cd /path/to/RotomNG/ && make
     ```
 
@@ -184,7 +184,7 @@ Instead of creating each service individually we can use an [PM2 - Ecosystem Fil
 
     ```sh
     cd /path/to/Dragonite/ && ./run.sh
-    cd /path/to/Golbat && go build golbat
+    cd /path/to/Golbat && make
     cd /path/to/RotomNG/ && make
     ```
 
@@ -335,7 +335,7 @@ Make sure to update the hightlighted path variable on line 2.
     echo "Updating Golbat"
     cd "$START_DIR"/Golbat
     git pull
-    go build golbat
+    make
 
     echo "Updating Dragonite"
     pm2 stop dragonite dragonite-admin

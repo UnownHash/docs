@@ -28,3 +28,11 @@ Golbat comes with basic database statistics built in. These tables are named wit
 | quest_stats         |
 | invasion_stats      |
 | pokemon_shiny_stats |
+
+`pokemon_area_stats` groups Pokémon by your [geofences](/docs/golbat/features#geofences). Pokémon outside all geofences, or all Pokémon when none are configured, are counted under the area `unmatched`.
+
+## Writing and cleanup
+
+How often each table is written is set in [`[stats_intervals]`](/docs/golbat/config#stats-intervals-section).
+
+Old rows are **not removed by default**. Set `cleanup.stats = true` to delete rows older than `cleanup.stats_days` (default 7) from `pokemon_stats`, `pokemon_shiny_stats`, `pokemon_iv_stats`, `pokemon_hundo_stats`, `pokemon_nundo_stats`, `invasion_stats`, `quest_stats` and `raid_stats`. `pokemon_area_stats` is pruned separately on a fixed schedule.

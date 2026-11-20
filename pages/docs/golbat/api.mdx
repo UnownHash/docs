@@ -1,0 +1,151 @@
+import { Callout } from 'nextra-theme-docs'
+
+# Golbat API
+
+Golbat serves an HTTP API on `port` and a gRPC API on `grpc_port`. Maps such as ReactMap read Pokémon and forts from it instead of querying the database.
+
+This page is an overview. Each Golbat instance also serves **interactive docs at `/docs`** (OpenAPI document at `/openapi.json`), which are always in sync with your version. The full written reference with every field is [`api.md`](https://github.com/UnownHash/Golbat/blob/main/api.md) in the repository.
+
+## Authentication
+
+| Endpoint | Credential | Config key |
+| :-- | :-- | :-- |
+| `/api/*`, `/debug/pprof/*` | `X-Golbat-Secret: <secret>` header | `api_secret` |
+| gRPC `GolbatApi` | `x-golbat-secret` metadata (`authorization: <secret>` or `authorization: Bearer <secret>` also work) | `api_secret` |
+| `POST /raw` | `Authorization: Bearer <token>` header | `raw_bearer` |
+| gRPC `RawProto` | `authorization` metadata with the token, **without** `Bearer ` | `raw_bearer` |
+| `/metrics` | `Authorization: Bearer <token>` | `prometheus.token` |
+| `/docs`, `/openapi.json`, `/schemas`, `/health`, `/version` | none | |
+
+An empty secret disables the corresponding check.
+
+<Callout type="warning">
+  gRPC server reflection is enabled and unauthenticated. It only exposes the schema, but `grpc_port` should still not be reachable from the internet.
+</Callout>
+
+## Raw data ingestion
+
+### `POST /raw`
+
+Receives game data from your MITM devices or Dragonite. The body is JSON:
+
+```json
+{
+  "uuid": "device_uuid",
+  "username": "account_name",
+  "trainerlvl": 30,
+  "scan_context": "Pokemon",
+  "lat_target": 40.7128,
+  "lon_target": -74.0060,
+  "have_ar": true,
+  "contents": [
+    { "payload": "<base64 response proto>", "type": 106, "request": "<base64 request proto>" }
+  ]
+}
+```
+
+| Field | Notes |
+| :-- | :-- |
+| `uuid` | Device id, shown in [`/api/devices/all`](#quests-tappables-and-devices). |
+| `username` | Account name. |
+| `trainerlvl` | Defaults to 30. Data from accounts **below level 30 is ignored** (except `PROXY_SOCIAL_ACTION`). |
+| `scan_context` | Scanner mode, used to pick [scan rules](/docs/golbat/config#scan-rules). |
+| `lat_target`, `lon_target` | Where the device is scanning. |
+| `have_ar` | Whether quests from this request are stored as AR or non-AR quests. Can be overridden per entry. |
+| `timestamp_ms` | Optional receive time in unix milliseconds. |
+| `contents[]` | Game protos: `payload` (or `data`), method number in `type` (or `method`), optional `request`. |
+| `nebula_contents[]` | Battle-backend calls, used to read invasion lineups. |
+| `push_contents[]` | Push messages, used for raid and max battle lobby player counts. |
+
+When the request has an `Origin` header, Golbat expects the **PogoDroid** format instead: a JSON array of `{"payload", "type", "lat", "lng", "quests_held"}`.
+
+Responses: `201` accepted (processing is asynchronous), `401` wrong bearer, `422` undecodable body. Bodies over 5 MiB are cut off. Under overload an accepted request can still be dropped; this is counted in `golbat_raw_packets_shed_total`.
+
+### gRPC `RawProto.SubmitRawProto`
+
+The binary equivalent of `/raw` on `grpc_port`, defined in [`grpc/raw_receiver.proto`](https://github.com/UnownHash/Golbat/blob/main/grpc/raw_receiver.proto). Payloads are raw bytes instead of base64. Unlike `/raw`, `trainer_level` defaults to 0, so it must be sent.
+
+## HTTP endpoints
+
+All endpoints below need the API secret.
+
+### Status
+
+| Method | Path | Description |
+| :-- | :-- | :-- |
+| GET | `/health`, `/api/health` | Health check (`/health` needs no secret). |
+| GET | `/version` | Golbat version (no secret). |
+| GET | `/api/status` | Enabled features, effective result limits and supported filters. Maps use it to detect capabilities. |
+
+### Pokémon
+
+| Method | Path | Description |
+| :-- | :-- | :-- |
+| GET | `/api/pokemon/id/{id}` | One Pokémon by encounter id. |
+| GET | `/api/pokemon/available` | Species and forms currently in memory, with counts. |
+| POST | `/api/pokemon/v3/scan` | Pokémon in a bounding box with filters. Current version, used by ReactMap. |
+| POST | `/api/pokemon/v2/scan`, `/api/pokemon/scan` | Older scan versions, kept for compatibility. |
+| POST | `/api/pokemon/search` | Nearest Pokémon of given species around a point. |
+
+### Forts
+
+Fort `scan` and `available` endpoints require [`fort_in_memory`](/docs/golbat/config#root-section). Gym and station lookups by id read through to the database and work without it; pokestop lookups by id only use the in-memory cache.
+
+| Method | Path | Description |
+| :-- | :-- | :-- |
+| POST | `/api/gym/scan`, `/api/pokestop/scan`, `/api/station/scan` | Forts of one type in a bounding box with filters. |
+| POST | `/api/fort/scan` | Gyms, pokestops and stations in one request. |
+| GET | `/api/gym/available`, `/api/pokestop/available`, `/api/station/available`, `/api/fort/available` | What is currently available (raid bosses, quest rewards, invasions, lures, max battles…). |
+| GET | `/api/gym/id/{id}`, `/api/pokestop/id/{id}`, `/api/station/id/{id}` | One fort by id. |
+| POST | `/api/gym/query`, `/api/station/query` | Several forts by id. |
+| POST | `/api/gym/search` | Search gyms by name, description or location. |
+| POST | `/api/pokestop-positions` | Id and position of every pokestop inside a geofence. |
+
+### Quests, tappables and devices
+
+| Method | Path | Description |
+| :-- | :-- | :-- |
+| POST | `/api/quest-status` | Number of quests held by pokestops inside a geofence. |
+| POST | `/api/clear-quests` | Clear AR and non-AR quests of every pokestop inside a geofence. |
+| GET | `/api/tappable/id/{id}` | One tappable. |
+| POST | `/api/tappable/scan` | Tappables in a bounding box. |
+| GET | `/api/tappable/available` | Reward types and encounter species of live tappables. |
+| GET | `/api/devices/all` | Last reported location of each device, kept for `cleanup.device_hours`. |
+
+### Fort tracker
+
+| Method | Path | Description |
+| :-- | :-- | :-- |
+| GET | `/api/fort-tracker/cell/{cell_id}` | Forts Golbat expects in an S2 cell. |
+| GET | `/api/fort-tracker/forts/{fort_id}` | Tracking state of one fort (used for stale fort removal). |
+
+### Admin
+
+| Method | Path | Description |
+| :-- | :-- | :-- |
+| GET, POST | `/api/reload-geojson` | Reload geofences from Koji or `geojson/geofence.json` and reset area stats. |
+| GET, POST | `/api/skip-preserve-pokemon` | Don't save in-memory Pokémon on the next shutdown (with `preserve_pokemon`). Cleared only by a restart. |
+
+### Debug
+
+With `tuning.profile_routes = true`, the standard Go profiling endpoints are served under `/debug/pprof/`. Block and mutex profiles additionally need `tuning.profile_contention`.
+
+## gRPC API
+
+Golbat serves the `GolbatApi` service ([`grpc/api.proto`](https://github.com/UnownHash/Golbat/blob/main/grpc/api.proto)) on `grpc_port`. Responses are smaller and faster to decode than JSON, which matters for large maps.
+
+| RPC | HTTP equivalent |
+| :-- | :-- |
+| `ScanPokemon` | `POST /api/pokemon/v3/scan` |
+| `GetPokemon` | `GET /api/pokemon/id/{id}`, batched |
+| `ScanGyms`, `ScanPokestops`, `ScanStations` | `POST /api/{gym,pokestop,station}/scan` |
+| `ScanForts` | `POST /api/fort/scan` |
+| `ScanTappables` | `POST /api/tappable/scan` |
+| `GetTappable` | `GET /api/tappable/id/{id}`, batched |
+
+Encounter ids are numbers, not strings. Large fort scans can exceed gRPC's default 4 MB client limit; raise the client's maximum receive size or lower `limit`.
+
+```bash
+grpcurl -plaintext -H 'x-golbat-secret: golbat' -max-msg-sz 67108864 \
+  localhost:50001 list golbat_api.GolbatApi
+```

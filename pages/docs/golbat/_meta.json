@@ -1,7 +1,10 @@
 {
   "index": "Introduction",
   "config": "Configuration",
-  "faq": "FAQ",
+  "features": "Features",
+  "api": "API",
+  "webhooks": "Webhooks",
   "pvp": "PVP",
-  "stats": "Statistics"
+  "stats": "Statistics",
+  "faq": "FAQ"
 }

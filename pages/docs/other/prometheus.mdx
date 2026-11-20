@@ -1,10 +1,41 @@
-import { Callout } from 'nextra-theme-docs'
-
 # Prometheus
 
-<Callout type="info" emoji="🚧">
-    This page is still under construction
-</Callout>
+Unown# services can export metrics in the [Prometheus](https://prometheus.io) format. Scrape them with Prometheus or VictoriaMetrics and visualise them in [Grafana](https://grafana.com).
 
--   https://github.com/UnownHash/Golbat/pull/100
--   https://github.com/UnownHash/Zapdos
+## Golbat
+
+Enable the endpoint in your Golbat config:
+
+```toml
+[prometheus]
+enabled = true
+token = ""          # optional; when set, scrapers must send "Authorization: Bearer <token>"
+#live_stats = true  # also export current gym, raid and invasion counts from the database
+```
+
+Metrics are served at `http://<golbat>:<port>/metrics`. A scrape config:
+
+```yml filename="prometheus.yml"
+scrape_configs:
+  - job_name: golbat
+    static_configs:
+      - targets: ['127.0.0.1:9001']
+    # authorization:
+    #   credentials: your_token
+```
+
+All Golbat metrics start with `golbat_`. Useful families:
+
+| Metrics | Shows |
+| :-- | :-- |
+| `golbat_raw_requests`, `golbat_raw_packets_shed_total`, `golbat_raw_processing_waiting` | Incoming data, and data dropped under overload |
+| `golbat_decode_*` | Processed game messages by type and result |
+| `golbat_pokemon_count_*`, `golbat_verified_pokemon_ttl` | Pokémon seen, IV/shiny/hundo counts and despawn time coverage per area |
+| `golbat_raid_count`, `golbat_incident_count`, `golbat_max_battle_count`, `golbat_fort_change` | Raids, invasions, max battles and fort changes |
+| `golbat_gyms`, `golbat_raids`, `golbat_incidents`, `golbat_lures`, `golbat_quests` | Current totals (with `live_stats`) |
+| `golbat_db_query_duration_seconds`, `golbat_slow_db_queries_total`, `golbat_write_behind_*` | Database performance and the write queue |
+| `golbat_api_scan_duration` | API scan latency |
+
+Golbat also exports standard Go runtime metrics and HTTP and gRPC request metrics.
+
+A ready-made Grafana dashboard is available in the Golbat repository: [`golbat-vm-dashboard.json`](https://github.com/UnownHash/Golbat/blob/main/golbat-vm-dashboard.json).

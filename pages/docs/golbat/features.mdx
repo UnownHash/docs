@@ -1,0 +1,38 @@
+import { Callout } from 'nextra-theme-docs'
+
+# Golbat Features
+
+## In-memory Pokémon
+
+Golbat keeps every active Pokémon in memory and serves it over its [API](/docs/golbat/api). Maps such as ReactMap read from the API instead of the database, which is much faster.
+
+- With `pokemon_memory_only = true`, Pokémon are not written to the `pokemon` table at all. This removes the largest source of database writes.
+- With `preserve_pokemon = true`, the in-memory Pokémon are saved on shutdown and restored on startup, so a restart doesn't empty the map. Use [`/api/skip-preserve-pokemon`](/docs/golbat/api#admin) to skip this once.
+
+## Weather changes
+
+When a cell's weather changes, Golbat recalculates the IVs of Pokémon in that cell for the new boost state instead of waiting for a rescan (`[weather] proactive_iv_switching`, on by default). Write these changes to the database with `proactive_iv_switching_to_db`. Both can be set per area or mode with [scan rules](/docs/golbat/config#scan-rules).
+
+## Forts
+
+- **Gyms, pokestops and power spot stations** are stored in the database and cached in memory.
+- **`fort_in_memory`** keeps all forts in a spatial index, needed for the fort scan endpoints that maps use. `preload` loads forts, stations and spawnpoints at startup instead of on first use.
+- **Removed forts:** Golbat tracks which forts belong to each S2 cell. A fort missing from cell scans for `cleanup.forts_stale_threshold` seconds is removed and a `fort_update` webhook with `change_type: "removal"` is sent. This needs `cells` processing enabled.
+- **Showcases:** pokestop showcases (focus and rankings) are stored and included in the `pokestop` webhook.
+- **Max battles:** active max battles at stations are stored, cleaned up after expiry (`cleanup.station_battles`) and sent as `max_battle` webhooks.
+
+## Tappables
+
+Tappables (overworld items and Pokémon) are stored with their rewards, cleaned up after expiry (`cleanup.tappables`), available through the [tappable API](/docs/golbat/api#quests-tappables-and-devices) and sent as `tappable` webhooks. Encounters from tappables are stored as Pokémon with `seen_type` `tappable_encounter`.
+
+## Geofences
+
+Geofences are used for webhook areas, scan rules and area statistics. Golbat loads them from [Koji](https://github.com/TurtIeSocks/Koji) (`[koji] url`) or, without Koji, from `geojson/geofence.json`. Koji results are cached in `cache/koji_geofence.json` as a fallback. Reload them with [`/api/reload-geojson`](/docs/golbat/api#admin).
+
+## Supported data
+
+Golbat processes map objects (Pokémon, forts, weather, cells), encounters, fort details, gym info, quests, invasions, contests, raid and max battle lobbies, and more. The full list is in [`protos.md`](https://github.com/UnownHash/Golbat/blob/main/protos.md).
+
+<Callout type="warning">
+  Data from accounts below **level 30** is ignored.
+</Callout>
