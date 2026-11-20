@@ -12,7 +12,7 @@ The scheduler is on by default (`[scheduler] enabled = true`). Turning it off al
 - **Target** – the areas a schedule applies to: area names, groups, or both, minus any `exclude` entries.
 - **Group** – a named set of areas (optionally limited to certain worker types) and global pools. Built-in groups: `all`, `all-pokemon`, `all-fort`, `all-quest` and `all-rare`.
 - **Window** – when something applies: start time (`at`, `HH:MM`), optional days (`["mon-fri"]`, `["sat","sun"]`) and a duration (`for`, e.g. `8h`).
-- **Run ledger** – the history of executed jobs, under **Scheduler → Run Ledger** in Dragonite Admin.
+- **Run ledger** – the history of executed jobs, under **Scheduler → Run Ledger** in [Dragonite Admin](/docs/dragonite/admin).
 
 Windows use each area's **local timezone**, taken from its geofence. Set `tz` on a schedule to use a fixed timezone instead.
 
