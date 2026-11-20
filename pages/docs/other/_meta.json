@@ -1,0 +1,10 @@
+{
+  "terminology": "Terminology",
+  "database": "Database",
+  "prometheus": "Prometheus",
+  "third-party": "Third Party",
+  "blissey": "Blissey",
+  "fletchling": "Fletchling",
+  "hybrid-setup": "Hybrid Setup (Legacy)",
+  "migration": "Migrating from RDM (Legacy)"
+}

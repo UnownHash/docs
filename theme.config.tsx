@@ -20,7 +20,7 @@ const config: DocsThemeConfig = {
   },
   docsRepositoryBase: 'https://github.com/unownhash/docs/edit/main',
   footer: {
-    text: '© 2023 Unown#',
+    text: `© ${new Date().getFullYear()} Unown#`,
   },
   useNextSeoProps() {
     return {
@@ -66,7 +66,7 @@ l33 0 -14 -47 c-8 -25 -14 -63 -14 -85 l0 -38 -58 0 c-66 0 -92 -18 -92 -62 0
     <>
       <link rel="icon" href="/favicon.png" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <meta property="og:title" content="Kōji" />
+      <meta property="og:title" content="Unown#" />
       <meta property="og:type" content="website" />
       <meta
         property="og:description"
